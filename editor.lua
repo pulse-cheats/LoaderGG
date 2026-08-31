@@ -1,11 +1,15 @@
 local Editor = {}
 
 function Editor.Start(ENV, AI, UI_Module)
+    -- Fallback API key verification
+    local apiKey = (ENV and ENV.GROQ_API_KEY) or "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"
+    local model = (ENV and ENV.MODEL) or "llama-3.3-70b-versatile"
+
     local ui = UI_Module.Init()
     
     local files = {
-        ["main.lua"] = "-- In-Game Script Editor\nprint('Hello from Lua Studio!')",
-        ["fly.lua"] = "-- Fly / Movement Script\nlocal player = game.Players.LocalPlayer\nlocal char = player.Character or player.CharacterAdded:Wait()\nprint('Character:', char.Name)"
+        ["main.lua"] = "-- Script Editor Ready\nprint('Hello World')",
+        ["sample.lua"] = "-- Sample File\nlocal p = game.Players.LocalPlayer\nprint('Logged as:', p.Name)"
     }
     local activeFile = "main.lua"
     
@@ -18,8 +22,8 @@ function Editor.Start(ENV, AI, UI_Module)
         
         for name, _ in pairs(files) do
             local fileBtn = Instance.new("TextButton")
-            fileBtn.Size = UDim2.new(1, -4, 0, 26)
-            fileBtn.BackgroundColor3 = (name == activeFile) and Color3.fromRGB(59, 130, 246) or Color3.fromRGB(40, 40, 46)
+            fileBtn.Size = UDim2.new(1, -4, 0, 24)
+            fileBtn.BackgroundColor3 = (name == activeFile) and Color3.fromRGB(59, 130, 246) or Color3.fromRGB(38, 38, 44)
             fileBtn.Text = " 📄 " .. name
             fileBtn.TextColor3 = Color3.fromRGB(240, 240, 240)
             fileBtn.Font = Enum.Font.Gotham
@@ -62,7 +66,7 @@ function Editor.Start(ENV, AI, UI_Module)
         if fn then
             task.spawn(fn)
         else
-            warn("[Luau Editor Syntax Error]: " .. tostring(err))
+            warn("[Syntax Error]: " .. tostring(err))
         end
     end)
     
@@ -75,10 +79,10 @@ function Editor.Start(ENV, AI, UI_Module)
         ui.PromptBox.Text = ""
         
         task.spawn(function()
-            local result = AI.Ask(ENV.GROQ_API_KEY, ENV.MODEL, prompt, ui.CodeBox.Text)
+            local result = AI.Ask(apiKey, model, prompt, ui.CodeBox.Text)
             ui.CodeBox.Text = result
             files[activeFile] = result
-            ui.AskBtn.Text = "✨ Ask AI"
+            ui.AskBtn.Text = "✨ AI"
         end)
     end)
 end
