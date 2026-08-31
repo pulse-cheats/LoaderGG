@@ -2,6 +2,11 @@ local HttpService = game:GetService("HttpService")
 
 local AI = {}
 
+-- Ενσωματωμένο Groq API Key & Config
+local GROQ_API_KEY = "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"
+local GROQ_MODEL = "llama-3.3-70b-versatile"
+local GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
+
 local function httpRequest(options)
     local fn = (syn and syn.request) or (http and http.request) or http_request or (fluxus and fluxus.request) or request
     if fn then
@@ -42,12 +47,12 @@ function AI.GetGameContext()
     return HttpService:JSONEncode(context)
 end
 
-function AI.Ask(apiKey, model, userPrompt, currentCode)
+function AI.Ask(userPrompt, currentCode)
     local gameContext = AI.GetGameContext()
     local systemPrompt = "You are an expert Roblox Luau script developer. Return ONLY valid, executable Luau code without markdown code blocks, explanation or backticks. Game Hierarchy Context: " .. gameContext
     
     local payload = {
-        model = model or "llama-3.3-70b-versatile",
+        model = GROQ_MODEL,
         messages = {
             { role = "system", content = systemPrompt },
             { role = "user", content = "Current Editor Code:\n" .. (currentCode or "") .. "\n\nUser Prompt: " .. userPrompt }
@@ -57,11 +62,11 @@ function AI.Ask(apiKey, model, userPrompt, currentCode)
     }
     
     local res = httpRequest({
-        Url = "https://api.groq.com/openai/v1/chat/completions",
+        Url = GROQ_URL,
         Method = "POST",
         Headers = {
             ["Content-Type"] = "application/json",
-            ["Authorization"] = "Bearer " .. apiKey
+            ["Authorization"] = "Bearer " .. GROQ_API_KEY
         },
         Body = HttpService:JSONEncode(payload)
     })
@@ -75,7 +80,7 @@ function AI.Ask(apiKey, model, userPrompt, currentCode)
             return text
         end
     end
-    return "-- [Error]: AI request failed. Check your API key or network."
+    return "-- [Error]: AI request failed. Check internet connection or API limits."
 end
 
 return AI
