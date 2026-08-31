@@ -2,10 +2,10 @@ local HttpService = game:GetService("HttpService")
 
 local AI = {}
 
--- Ενσωματωμένο Groq API Key & Config
-local GROQ_API_KEY = "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"
-local GROQ_MODEL = "llama-3.3-70b-versatile"
-local GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
+-- Cohere API Configuration
+local COHERE_API_KEY = "AQ.Ab8RN6L3ZBSjBIhrXae-K9VzOX6I9O4Oqiylc5ptZJMBW_z1JQ"
+local COHERE_URL = "https://api.cohere.com/v2/chat"
+local COHERE_MODEL = "command-r-plus-08-2024"
 
 local function httpRequest(options)
     local fn = (syn and syn.request) or (http and http.request) or http_request or (fluxus and fluxus.request) or request
@@ -52,21 +52,26 @@ function AI.Ask(userPrompt, currentCode)
     local systemPrompt = "You are an expert Roblox Luau script developer. Return ONLY valid, executable Luau code without markdown code blocks, explanation or backticks. Game Hierarchy Context: " .. gameContext
     
     local payload = {
-        model = GROQ_MODEL,
+        model = COHERE_MODEL,
         messages = {
-            { role = "system", content = systemPrompt },
-            { role = "user", content = "Current Editor Code:\n" .. (currentCode or "") .. "\n\nUser Prompt: " .. userPrompt }
+            {
+                role = "system",
+                content = systemPrompt
+            },
+            {
+                role = "user",
+                content = "Current Editor Code:\n" .. (currentCode or "") .. "\n\nUser Prompt: " .. userPrompt
+            }
         },
-        temperature = 0.2,
-        max_tokens = 2048
+        temperature = 0.2
     }
     
     local res = httpRequest({
-        Url = GROQ_URL,
+        Url = COHERE_URL,
         Method = "POST",
         Headers = {
             ["Content-Type"] = "application/json",
-            ["Authorization"] = "Bearer " .. GROQ_API_KEY
+            ["Authorization"] = "Bearer " .. COHERE_API_KEY
         },
         Body = HttpService:JSONEncode(payload)
     })
@@ -74,13 +79,20 @@ function AI.Ask(userPrompt, currentCode)
     if res and (res.StatusCode == 200 or res.Success) then
         local rawData = res.Body or res
         local data = typeof(rawData) == "string" and HttpService:JSONDecode(rawData) or rawData
-        if data.choices and data.choices[1] then
-            local text = data.choices[1].message.content
+        
+        -- Cohere v2 response parsing
+        if data.message and data.message.content and data.message.content[1] then
+            local text = data.message.content[1].text
+            text = text:gsub("^```lua%s*", ""):gsub("^```%s*", ""):gsub("%s*```$", "")
+            return text
+        elseif data.text then
+            local text = data.text
             text = text:gsub("^```lua%s*", ""):gsub("^```%s*", ""):gsub("%s*```$", "")
             return text
         end
     end
-    return "-- [Error]: AI request failed. Check internet connection or API limits."
+    
+    return "-- [Error]: Cohere AI request failed. Please check network or API key status."
 end
 
 return AI
