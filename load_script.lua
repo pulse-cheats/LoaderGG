@@ -1,38 +1,25 @@
 --!strict
--- [[ Hub Quick Loader ]]
+-- Hub Loader
 
 local config = {
-    repoOwner = "pulse-cheats", -- Το GitHub username σου
-    repoName = "LoaderGG",       -- Το όνομα του repository σου
-    branch = "main",                   -- Το branch (συνήθως main)
-    targetFile = "assets/video.mov"   -- Το αρχείο με το animation σου (ή video.lua)
+    repoOwner = "pulse-cheats", -- Βάλε το GitHub username σου
+    repoName = "LoaderGG",       -- Βάλε το όνομα του repository
+    branch = "main",
+    targetFile = "assets/video.luau"
 }
 
-local url = string.format(
-    "https://raw.githubusercontent.com/%s/%s/%s/%s",
-    config.repoOwner,
-    config.repoName,
-    config.branch,
-    config.targetFile
-)
+local url = string.format("https://raw.githubusercontent.com/%s/%s/%s/%s",
+    config.repoOwner, config.repoName, config.branch, config.targetFile)
 
--- Φόρτωση και εκτέλεση του animation σου
-local success, result = pcall(function()
+local success, scriptContent = pcall(function()
     return game:HttpGet(url)
 end)
 
-if not success or not result or result == "" then
-    warn("[Loader Error] Failed to fetch animation from GitHub: " .. tostring(result))
-    return
-end
-
-local execSuccess, runAnimation = pcall(function()
-    return loadstring(result)
-end)
-
-if execSuccess and typeof(runAnimation) == "function" then
-    -- Εκκίνηση του animation σου
-    task.spawn(runAnimation)
+if success and scriptContent then
+    local runAnimation = loadstring(scriptContent)
+    if typeof(runAnimation) == "function" then
+        task.spawn(runAnimation)
+    end
 else
-    warn("[Loader Error] Failed to execute animation script: " .. tostring(runAnimation))
+    warn("Failed to load video animation from GitHub!")
 end
