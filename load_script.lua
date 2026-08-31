@@ -2,10 +2,10 @@
 -- [[ Hub Quick Loader ]]
 
 local config = {
-    repoOwner = "YOUR_GITHUB_USERNAME", -- Το GitHub username σου
-    repoName = "YOUR_REPO_NAME",       -- Το όνομα του repository σου
+    repoOwner = "pulse-cheats", -- Το GitHub username σου
+    repoName = "LoaderGG",       -- Το όνομα του repository σου
     branch = "main",                   -- Το branch (συνήθως main)
-    targetFile = "assets/video.luau"   -- Το αρχείο με το animation σου (ή video.lua)
+    targetFile = "assets/video.mov"   -- Το αρχείο με το animation σου (ή video.lua)
 }
 
 local url = string.format(
