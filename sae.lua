@@ -469,385 +469,10 @@ local function MainControllerLoop()
     end)
 end
 
--- UI
-pcall(function()
-    local parentObj = (gethui and gethui()) or CoreGui or PlayerGui
-    local old = parentObj:FindFirstChild("StealEgg_Clean")
-    if old then old:Destroy() end
-end)
 
-local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "StealEgg_Clean"
-ScreenGui.ResetOnSpawn = false
-
-if gethui then
-    ScreenGui.Parent = gethui()
-elseif syn and syn.protect_gui then
-    syn.protect_gui(ScreenGui)
-    ScreenGui.Parent = CoreGui
-else
-    pcall(function() ScreenGui.Parent = CoreGui end)
-    if not ScreenGui.Parent then ScreenGui.Parent = PlayerGui end
-end
-
-local function EnableSmoothDrag(frame, handle)
-    local dragging, dragInput, dragStart, startPos
-    handle = handle or frame
-
-    handle.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            dragging = true
-            dragStart = input.Position
-            startPos = frame.Position
-            input.Changed:Connect(function()
-                if input.UserInputState == Enum.UserInputState.End then dragging = false end
-            end)
-        end
-    end)
-
-    handle.InputChanged:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-            dragInput = input
-        end
-    end)
-
-    UserInputService.InputChanged:Connect(function(input)
-        if input == dragInput and dragging then
-            local delta = input.Position - dragStart
-            TweenService:Create(frame, TweenInfo.new(0.06, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-                Position = UDim2.new(
-                    startPos.X.Scale,
-                    startPos.X.Offset + delta.X,
-                    startPos.Y.Scale,
-                    startPos.Y.Offset + delta.Y
-                )
-            }):Play()
-        end
-    end)
-end
-
--- Floating Button
-local FloatBtn = Instance.new("TextButton")
-FloatBtn.Name = "FloatButton"
-FloatBtn.Size = UDim2.new(0, 54, 0, 54)
-FloatBtn.Position = UDim2.new(0.02, 0, 0.45, 0)
-FloatBtn.BackgroundColor3 = Color3.fromRGB(20, 22, 34)
-FloatBtn.Text = "⚔️"
-FloatBtn.TextSize = 24
-FloatBtn.AutoButtonColor = false
-FloatBtn.Parent = ScreenGui
-
-Instance.new("UICorner", FloatBtn).CornerRadius = UDim.new(1, 0)
-local fbStroke = Instance.new("UIStroke", FloatBtn)
-fbStroke.Color = Color3.fromRGB(255, 60, 80)
-fbStroke.Thickness = 2.4
-
-EnableSmoothDrag(FloatBtn, FloatBtn)
-
--- Main Frame
-local Main = Instance.new("Frame")
-Main.Name = "MainCard"
-Main.Size = UDim2.new(0, 350, 0, 490)
-Main.Position = UDim2.new(0.5, -175, 0.5, -245)
-Main.BackgroundColor3 = Color3.fromRGB(12, 14, 20)
-Main.BorderSizePixel = 0
-Main.Active = true
-Main.ClipsDescendants = true
-Main.Parent = ScreenGui
-
-Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 18)
-local mStroke = Instance.new("UIStroke", Main)
-mStroke.Color = Color3.fromRGB(45, 55, 80)
-mStroke.Thickness = 1.6
-
--- Header Bar
-local Header = Instance.new("Frame")
-Header.Name = "Header"
-Header.Size = UDim2.new(1, 0, 0, 50)
-Header.BackgroundColor3 = Color3.fromRGB(18, 20, 30)
-Header.BorderSizePixel = 0
-Header.Parent = Main
-Instance.new("UICorner", Header).CornerRadius = UDim.new(0, 18)
-
-local Title = Instance.new("TextLabel")
-Title.Size = UDim2.new(1, -90, 1, 0)
-Title.Position = UDim2.new(0, 14, 0, 0)
-Title.BackgroundTransparency = 1
-Title.Text = "⚔️ STEAL EGG - PvP & FARM"
-Title.TextColor3 = Color3.fromRGB(255, 255, 255)
-Title.Font = Enum.Font.GothamBold
-Title.TextSize = 13
-Title.TextXAlignment = Enum.TextXAlignment.Left
-Title.Parent = Header
-
-local Badge = Instance.new("TextLabel")
-Badge.Size = UDim2.new(0, 56, 0, 20)
-Badge.Position = UDim2.new(0, 200, 0.5, -10)
-Badge.BackgroundColor3 = Color3.fromRGB(255, 60, 80)
-Badge.TextColor3 = Color3.fromRGB(255, 255, 255)
-Badge.Font = Enum.Font.GothamBold
-Badge.TextSize = 9
-Badge.Text = "v9 PRO"
-Badge.Parent = Header
-Instance.new("UICorner", Badge).CornerRadius = UDim.new(0, 6)
-
-local CloseBtn = Instance.new("TextButton")
-CloseBtn.Size = UDim2.new(0, 30, 0, 30)
-CloseBtn.Position = UDim2.new(1, -40, 0.5, -15)
-CloseBtn.BackgroundColor3 = Color3.fromRGB(235, 55, 75)
-CloseBtn.Text = "✕"
-CloseBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-CloseBtn.Font = Enum.Font.GothamBold
-CloseBtn.TextSize = 13
-CloseBtn.Parent = Header
-Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(0, 8)
-
-CloseBtn.MouseButton1Click:Connect(function() Main.Visible = false end)
-FloatBtn.MouseButton1Click:Connect(function() Main.Visible = not Main.Visible end)
-EnableSmoothDrag(Main, Header)
-
--- Tabs
-local TabBar = Instance.new("Frame")
-TabBar.Size = UDim2.new(1, -20, 0, 36)
-TabBar.Position = UDim2.new(0, 10, 0, 56)
-TabBar.BackgroundColor3 = Color3.fromRGB(18, 21, 32)
-TabBar.Parent = Main
-Instance.new("UICorner", TabBar).CornerRadius = UDim.new(0, 10)
-
-local TabFarm = Instance.new("TextButton")
-TabFarm.Size = UDim2.new(0.5, -2, 1, -4)
-TabFarm.Position = UDim2.new(0, 2, 0, 2)
-TabFarm.BackgroundColor3 = Color3.fromRGB(34, 197, 94)
-TabFarm.Text = "🥚 AUTO FARM"
-TabFarm.TextColor3 = Color3.fromRGB(255, 255, 255)
-TabFarm.Font = Enum.Font.GothamBold
-TabFarm.TextSize = 11
-TabFarm.Parent = TabBar
-Instance.new("UICorner", TabFarm).CornerRadius = UDim.new(0, 8)
-
-local TabPvP = Instance.new("TextButton")
-TabPvP.Size = UDim2.new(0.5, -2, 1, -4)
-TabPvP.Position = UDim2.new(0.5, 0, 0, 2)
-TabPvP.BackgroundColor3 = Color3.fromRGB(24, 28, 42)
-TabPvP.Text = "⚔️ PVP STEALER"
-TabPvP.TextColor3 = Color3.fromRGB(160, 170, 190)
-TabPvP.Font = Enum.Font.GothamBold
-TabPvP.TextSize = 11
-TabPvP.Parent = TabBar
-Instance.new("UICorner", TabPvP).CornerRadius = UDim.new(0, 8)
-
-TabFarm.MouseButton1Click:Connect(function()
-    State.CurrentMode = "FARM"
-    TabFarm.BackgroundColor3 = Color3.fromRGB(34, 197, 94)
-    TabFarm.TextColor3 = Color3.fromRGB(255, 255, 255)
-    TabPvP.BackgroundColor3 = Color3.fromRGB(24, 28, 42)
-    TabPvP.TextColor3 = Color3.fromRGB(160, 170, 190)
-end)
-
-TabPvP.MouseButton1Click:Connect(function()
-    State.CurrentMode = "PVP"
-    TabPvP.BackgroundColor3 = Color3.fromRGB(239, 68, 68)
-    TabPvP.TextColor3 = Color3.fromRGB(255, 255, 255)
-    TabFarm.BackgroundColor3 = Color3.fromRGB(24, 28, 42)
-    TabFarm.TextColor3 = Color3.fromRGB(160, 170, 190)
-end)
-
--- Scroll Area
-local Scroll = Instance.new("ScrollingFrame")
-Scroll.Size = UDim2.new(1, -20, 1, -104)
-Scroll.Position = UDim2.new(0, 10, 0, 98)
-Scroll.BackgroundTransparency = 1
-Scroll.ScrollBarThickness = 4
-Scroll.ScrollBarImageColor3 = Color3.fromRGB(255, 60, 80)
-Scroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
-Scroll.Parent = Main
-
-local SList = Instance.new("UIListLayout", Scroll)
-SList.Padding = UDim.new(0, 10)
-SList.SortOrder = Enum.SortOrder.LayoutOrder
-
--- Status Card
-local StatusCard = Instance.new("Frame")
-StatusCard.Size = UDim2.new(1, 0, 0, 58)
-StatusCard.BackgroundColor3 = Color3.fromRGB(20, 23, 34)
-StatusCard.Parent = Scroll
-Instance.new("UICorner", StatusCard).CornerRadius = UDim.new(0, 12)
-local stStroke = Instance.new("UIStroke", StatusCard)
-stStroke.Color = Color3.fromRGB(38, 46, 68)
-stStroke.Thickness = 1.2
-
-local StatusLabel = Instance.new("TextLabel")
-StatusLabel.Size = UDim2.new(1, -16, 0, 24)
-StatusLabel.Position = UDim2.new(0, 10, 0, 6)
-StatusLabel.BackgroundTransparency = 1
-StatusLabel.TextColor3 = Color3.fromRGB(130, 225, 255)
-StatusLabel.Font = Enum.Font.GothamSemibold
-StatusLabel.TextSize = 12
-StatusLabel.Text = "Status: Idle"
-StatusLabel.TextXAlignment = Enum.TextXAlignment.Left
-StatusLabel.Parent = StatusCard
-
-local EggsLabel = Instance.new("TextLabel")
-EggsLabel.Size = UDim2.new(1, -16, 0, 20)
-EggsLabel.Position = UDim2.new(0, 10, 0, 30)
-EggsLabel.BackgroundTransparency = 1
-EggsLabel.TextColor3 = Color3.fromRGB(190, 200, 220)
-EggsLabel.Font = Enum.Font.Gotham
-EggsLabel.TextSize = 11
-EggsLabel.Text = "🥚 Eggs: 0  |  ⚔️ Kills: 0  |  Mode: FARM"
-EggsLabel.TextXAlignment = Enum.TextXAlignment.Left
-EggsLabel.Parent = StatusCard
-
--- Start / Stop Button
-local ToggleBtn = Instance.new("TextButton")
-ToggleBtn.Size = UDim2.new(1, 0, 0, 44)
-ToggleBtn.BackgroundColor3 = Color3.fromRGB(34, 197, 94)
-ToggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-ToggleBtn.Font = Enum.Font.GothamBold
-ToggleBtn.TextSize = 14
-ToggleBtn.Text = "▶  START ENGINE"
-ToggleBtn.AutoButtonColor = false
-ToggleBtn.Parent = Scroll
-Instance.new("UICorner", ToggleBtn).CornerRadius = UDim.new(0, 12)
-
-ToggleBtn.MouseButton1Click:Connect(function()
-    State.Running = not State.Running
-    if State.Running then
-        TweenService:Create(ToggleBtn, TweenInfo.new(0.25), {BackgroundColor3 = Color3.fromRGB(239, 68, 68)}):Play()
-        ToggleBtn.Text = "⏹  STOP ENGINE"
-        MainControllerLoop()
-    else
-        TweenService:Create(ToggleBtn, TweenInfo.new(0.25), {BackgroundColor3 = Color3.fromRGB(34, 197, 94)}):Play()
-        ToggleBtn.Text = "▶  START ENGINE"
-        State.Status = "⏹️ Idle"
-    end
-end)
-
--- PvP Info
-local PvPInfo = Instance.new("Frame")
-PvPInfo.Size = UDim2.new(1, 0, 0, 36)
-PvPInfo.BackgroundColor3 = Color3.fromRGB(25, 20, 30)
-PvPInfo.Parent = Scroll
-Instance.new("UICorner", PvPInfo).CornerRadius = UDim.new(0, 10)
-local pStroke = Instance.new("UIStroke", PvPInfo)
-pStroke.Color = Color3.fromRGB(120, 40, 50)
-
-local PvPText = Instance.new("TextLabel")
-PvPText.Size = UDim2.new(1, -16, 1, 0)
-PvPText.Position = UDim2.new(0, 10, 0, 0)
-PvPText.BackgroundTransparency = 1
-PvPText.Text = "⚔️ Auto-Equips Bat (Slot 1) & ambushes at Stages 1-3"
-PvPText.TextColor3 = Color3.fromRGB(255, 120, 130)
-PvPText.Font = Enum.Font.GothamMedium
-PvPText.TextSize = 10
-PvPText.TextXAlignment = Enum.TextXAlignment.Left
-PvPText.Parent = PvPInfo
-
--- Section: Stage Select
-local StgHead = Instance.new("TextLabel")
-StgHead.Size = UDim2.new(1, 0, 0, 16)
-StgHead.BackgroundTransparency = 1
-StgHead.TextColor3 = Color3.fromRGB(255, 195, 60)
-StgHead.Font = Enum.Font.GothamBold
-StgHead.TextSize = 11
-StgHead.Text = "🎯 TARGET STAGE (FARM MODE)"
-StgHead.TextXAlignment = Enum.TextXAlignment.Left
-StgHead.Parent = Scroll
-
-local StgGrid = Instance.new("Frame")
-StgGrid.Size = UDim2.new(1, 0, 0, 0)
-StgGrid.AutomaticSize = Enum.AutomaticSize.Y
-StgGrid.BackgroundTransparency = 1
-StgGrid.Parent = Scroll
-
-local sg = Instance.new("UIGridLayout", StgGrid)
-sg.CellSize = UDim2.new(0.31, 0, 0, 30)
-sg.CellPadding = UDim2.new(0.035, 0, 0, 6)
-
-local StgBtns = {}
-for i = 1, #GameData.Stages do
-    local b = Instance.new("TextButton")
-    b.Text = "Stage " .. i
-    b.Font = Enum.Font.GothamMedium
-    b.TextSize = 11
-    b.TextColor3 = (i == State.SelectedStageIndex) and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(160, 170, 190)
-    b.BackgroundColor3 = (i == State.SelectedStageIndex) and Color3.fromRGB(255, 145, 0) or Color3.fromRGB(26, 30, 42)
-    b.AutoButtonColor = false
-    b.Parent = StgGrid
-    Instance.new("UICorner", b).CornerRadius = UDim.new(0, 6)
-
-    b.MouseButton1Click:Connect(function()
-        State.SelectedStageIndex = i
-        for idx, btn in ipairs(StgBtns) do
-            local isSel = (idx == i)
-            TweenService:Create(btn, TweenInfo.new(0.15), {
-                BackgroundColor3 = isSel and Color3.fromRGB(255, 145, 0) or Color3.fromRGB(26, 30, 42),
-                TextColor3 = isSel and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(160, 170, 190)
-            }):Play()
-        end
-    end)
-    table.insert(StgBtns, b)
-end
-
--- Section: Plot Select
-local PltHead = Instance.new("TextLabel")
-PltHead.Size = UDim2.new(1, 0, 0, 16)
-PltHead.BackgroundTransparency = 1
-PltHead.TextColor3 = Color3.fromRGB(70, 210, 160)
-PltHead.Font = Enum.Font.GothamBold
-PltHead.TextSize = 11
-PltHead.Text = "🏡 YOUR PLOT"
-PltHead.TextXAlignment = Enum.TextXAlignment.Left
-PltHead.Parent = Scroll
-
-local PltGrid = Instance.new("Frame")
-PltGrid.Size = UDim2.new(1, 0, 0, 0)
-PltGrid.AutomaticSize = Enum.AutomaticSize.Y
-PltGrid.BackgroundTransparency = 1
-PltGrid.Parent = Scroll
-
-local pg = Instance.new("UIGridLayout", PltGrid)
-pg.CellSize = UDim2.new(0.22, 0, 0, 28)
-pg.CellPadding = UDim2.new(0.04, 0, 0, 6)
-
-local PltBtns = {}
-for i = 1, 7 do
-    local pName = "Plot " .. i
-    local b = Instance.new("TextButton")
-    b.Text = "Plot " .. i
-    b.Font = Enum.Font.GothamMedium
-    b.TextSize = 11
-    local isSel = (pName == State.SelectedPlotName)
-    b.TextColor3 = isSel and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(160, 170, 190)
-    b.BackgroundColor3 = isSel and Color3.fromRGB(37, 99, 235) or Color3.fromRGB(26, 30, 42)
-    b.AutoButtonColor = false
-    b.Parent = PltGrid
-    Instance.new("UICorner", b).CornerRadius = UDim.new(0, 6)
-
-    b.MouseButton1Click:Connect(function()
-        State.SelectedPlotName = pName
-        for name, btn in pairs(PltBtns) do
-            local sel = (name == pName)
-            TweenService:Create(btn, TweenInfo.new(0.15), {
-                BackgroundColor3 = sel and Color3.fromRGB(37, 99, 235) or Color3.fromRGB(26, 30, 42),
-                TextColor3 = sel and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(160, 170, 190)
-            }):Play()
-        end
-    end)
-    PltBtns[pName] = b
-end
-
--- Live Updater
-RunService.RenderStepped:Connect(function()
-    StatusLabel.Text = "Status: " .. State.Status
-    EggsLabel.Text = "🥚 Eggs: " .. State.EggsCollected .. "  |  ⚔️ Kills: " .. State.PlayersKilled .. "  |  Mode: " .. State.CurrentMode
-end)
-
---[[
-    ================================================================
-    ⚔️ UI, GIPHY LOADING, AUTO PLOT & ANTI-RAGDOLL EXTENSION
-    ================================================================
---]]
+-- ================================================================
+-- ⚔️ MASTER EXTENSION: GIPHY LOADING, AUTO PLOT, ANTI-RAGDOLL, NO ANIMATION & COMPACT PRO UI
+-- ================================================================
 
 task.spawn(function()
     local success, err = pcall(function()
@@ -860,11 +485,11 @@ task.spawn(function()
         -- Cleanup old UIs
         pcall(function()
             for _, child in ipairs(PlayerGui:GetChildren()) do
-                if child.Name == "StealAnEggProUI" then child:Destroy() end
+                if child.Name == "StealAnEggProUI" or child.Name == "StealEgg_Clean" then child:Destroy() end
             end
             if CoreGui then
                 for _, child in ipairs(CoreGui:GetChildren()) do
-                    if child.Name == "StealAnEggProUI" then child:Destroy() end
+                    if child.Name == "StealAnEggProUI" or child.Name == "StealEgg_Clean" then child:Destroy() end
                 end
             end
         end)
@@ -877,7 +502,9 @@ task.spawn(function()
         end)
         if not ScreenGui.Parent then ScreenGui.Parent = PlayerGui end
 
-        -- Loading Screen
+        -- ================================================================
+        -- 🌟 GIPHY LOADING SCREEN INTRO (7 SECONDS)
+        -- ================================================================
         local LoadOverlay = Instance.new("Frame", ScreenGui)
         LoadOverlay.Size = UDim2.new(1, 0, 1, 0)
         LoadOverlay.BackgroundColor3 = Color3.fromRGB(10, 10, 14)
@@ -909,7 +536,64 @@ task.spawn(function()
         task.wait(0.8)
         LoadOverlay:Destroy()
 
-        -- Toggle Button
+        -- Additional State variables for new features
+        State.AutoPlotDetect = true
+        State.AntiRagdoll = true
+        State.NoAnimation = false
+
+        -- Auto Plot Detector Function
+        local function DetectMyPlot()
+            pcall(function()
+                local hrp = GetHRP()
+                if not hrp then return end
+                local closest = "Plot 1"
+                local minDist = 999999
+                for pName, pPos in pairs(GameData.Plots) do
+                    local dist = (hrp.Position - pPos).Magnitude
+                    if dist < minDist then
+                        minDist = dist
+                        closest = pName
+                    end
+                end
+                State.SelectedPlotName = closest
+            end)
+        end
+
+        -- Anti-Ragdoll & No Animation Loop
+        task.spawn(function()
+            while true do
+                task.wait(0.2)
+                pcall(function()
+                    local ch = GetChar()
+                    if ch then
+                        if State.AntiRagdoll then
+                            for _, descendant in ipairs(ch:GetDescendants()) do
+                                if descendant:IsA("BallSocketConstraint") or descendant.Name:lower():find("ragdoll") then
+                                    descendant:Destroy()
+                                end
+                            end
+                            local hum = GetHumanoid()
+                            if hum then hum.PlatformStand = false end
+                        end
+                        if State.NoAnimation then
+                            local hum = GetHumanoid()
+                            if hum then
+                                for _, track in ipairs(hum:GetPlayingAnimationTracks()) do
+                                    if track.Animation and track.Animation.AnimationId then
+                                        local id = track.Animation.AnimationId:lower()
+                                        if id:find("walk") or id:find("run") or id:find("move") or id:find("fall") then
+                                            track:Stop()
+                                        end
+                                    end
+                                end
+                            end
+                        end
+                    end
+                end)
+            end
+        end)
+
+        -- Floating Toggle Button (Appears when UI is closed with X)
         local ToggleBtn = Instance.new("TextButton", ScreenGui)
         ToggleBtn.Size = UDim2.new(0, 38, 0, 38)
         ToggleBtn.Position = UDim2.new(0, 15, 0, 140)
@@ -922,7 +606,7 @@ task.spawn(function()
         tStroke.Color = Color3.fromRGB(139, 92, 246)
         tStroke.Thickness = 2
 
-        -- Main Frame
+        -- Main Compact Window Frame (420 x 280)
         local MainFrame = Instance.new("Frame", ScreenGui)
         MainFrame.Size = UDim2.new(0, 420, 0, 280)
         MainFrame.Position = UDim2.new(0.5, -210, 0.5, -140)
@@ -938,7 +622,7 @@ task.spawn(function()
             ToggleBtn.Visible = false
         end)
 
-        -- Top Bar
+        -- Top Bar Header
         local TopBar = Instance.new("Frame", MainFrame)
         TopBar.Size = UDim2.new(1, 0, 0, 32)
         TopBar.BackgroundColor3 = Color3.fromRGB(18, 18, 24)
@@ -970,7 +654,163 @@ task.spawn(function()
             ToggleBtn.Visible = true
         end)
 
-        print("Full Master Script with Original Engine + UI Loaded Successfully!")
+        -- Left Sidebar Categories
+        local Sidebar = Instance.new("ScrollingFrame", MainFrame)
+        Sidebar.Size = UDim2.new(0, 115, 1, -32)
+        Sidebar.Position = UDim2.new(0, 0, 0, 32)
+        Sidebar.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
+        Sidebar.BorderSizePixel = 0
+        Sidebar.CanvasSize = UDim2.new(0, 0, 0, 220)
+        Sidebar.ScrollBarThickness = 2
+
+        local categories = {"Steal & Farm", "PvP Combat", "ESP & Visuals", "Pets Wiki"}
+        local catButtons = {}
+        local catPages = {}
+
+        local ContentArea = Instance.new("Frame", MainFrame)
+        ContentArea.Size = UDim2.new(1, -115, 1, -32)
+        ContentArea.Position = UDim2.new(0, 115, 0, 32)
+        ContentArea.BackgroundTransparency = 1
+
+        for i, catName in ipairs(categories) do
+            local cBtn = Instance.new("TextButton", Sidebar)
+            cBtn.Size = UDim2.new(1, -6, 0, 28)
+            cBtn.Position = UDim2.new(0, 3, 0, (i-1)*32 + 6)
+            cBtn.BackgroundColor3 = (i == 1) and Color3.fromRGB(139, 92, 246) or Color3.fromRGB(20, 20, 28)
+            cBtn.Text = " " .. catName
+            cBtn.TextColor3 = (i == 1) and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(156, 163, 175)
+            cBtn.TextSize = 10
+            cBtn.Font = Enum.Font.GothamBold
+            cBtn.TextXAlignment = Enum.TextXAlignment.Left
+            Instance.new("UICorner", cBtn).CornerRadius = UDim.new(0, 4)
+            catButtons[catName] = cBtn
+
+            local page = Instance.new("ScrollingFrame", ContentArea)
+            page.Size = UDim2.new(1, 0, 1, 0)
+            page.BackgroundTransparency = 1
+            page.Visible = (i == 1)
+            page.CanvasSize = UDim2.new(0, 0, 0, 300)
+            page.ScrollBarThickness = 2
+            catPages[catName] = page
+
+            cBtn.MouseButton1Click:Connect(function()
+                for _, p in pairs(catPages) do p.Visible = false end
+                for _, b in pairs(catButtons) do 
+                    b.BackgroundColor3 = Color3.fromRGB(20, 20, 28)
+                    b.TextColor3 = Color3.fromRGB(156, 163, 175)
+                end
+                page.Visible = true
+                cBtn.BackgroundColor3 = Color3.fromRGB(139, 92, 246)
+                cBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+            end)
+        end
+
+        local function CreateToggleRow(parent, labelText, defaultVal, callback, yPos)
+            local row = Instance.new("Frame", parent)
+            row.Size = UDim2.new(1, -12, 0, 26)
+            row.Position = UDim2.new(0, 6, 0, yPos)
+            row.BackgroundColor3 = Color3.fromRGB(18, 18, 26)
+            Instance.new("UICorner", row).CornerRadius = UDim.new(0, 4)
+
+            local lbl = Instance.new("TextLabel", row)
+            lbl.Size = UDim2.new(0, 160, 1, 0)
+            lbl.Position = UDim2.new(0, 8, 0, 0)
+            lbl.BackgroundTransparency = 1
+            lbl.Text = labelText
+            lbl.TextColor3 = Color3.fromRGB(220, 220, 230)
+            lbl.TextSize = 10
+            lbl.Font = Enum.Font.GothamBold
+            lbl.TextXAlignment = Enum.TextXAlignment.Left
+
+            local tBtn = Instance.new("TextButton", row)
+            tBtn.Size = UDim2.new(0, 36, 0, 16)
+            tBtn.Position = UDim2.new(1, -40, 0.5, -8)
+            tBtn.BackgroundColor3 = defaultVal and Color3.fromRGB(34, 197, 94) or Color3.fromRGB(50, 50, 65)
+            tBtn.Text = defaultVal and "ON" or "OFF"
+            tBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+            tBtn.TextSize = 8
+            Instance.new("UICorner", tBtn).CornerRadius = UDim.new(1, 0)
+
+            local active = defaultVal
+            tBtn.MouseButton1Click:Connect(function()
+                active = not active
+                tBtn.BackgroundColor3 = active and Color3.fromRGB(34, 197, 94) or Color3.fromRGB(50, 50, 65)
+                tBtn.Text = active and "ON" or "OFF"
+                callback(active)
+            end)
+            return row
+        end
+
+        -- --- 1. STEAL & FARM PAGE ---
+        local farmPage = catPages["Steal & Farm"]
+        CreateToggleRow(farmPage, "Auto Steal Eggs", false, function(v)
+            State.Running = v
+            if v then State.CurrentMode = "FARM" end
+        end, 6)
+
+        CreateToggleRow(farmPage, "Auto Plot Detect", true, function(v)
+            State.AutoPlotDetect = v
+        end, 36)
+
+        CreateToggleRow(farmPage, "Anti-Ragdoll", true, function(v)
+            State.AntiRagdoll = v
+        end, 66)
+
+        CreateToggleRow(farmPage, "No Animation", false, function(v)
+            State.NoAnimation = v
+        end, 96)
+
+        -- --- 2. PVP COMBAT PAGE ---
+        local pvpPage = catPages["PvP Combat"]
+        CreateToggleRow(pvpPage, "PvP Stealer Mode", false, function(v)
+            State.PvPRunning = v
+            if v then State.CurrentMode = "PVP" end
+        end, 6)
+
+        -- --- 3. ESP PAGE ---
+        local espPage = catPages["ESP & Visuals"]
+        CreateToggleRow(espPage, "Egg ESP (Highlight)", false, function(v)
+            State.EggESP = v
+            task.spawn(function()
+                while State.EggESP do
+                    pcall(function()
+                        for _, obj in pairs(workspace:GetDescendants()) do
+                            if obj:IsA("BasePart") and (obj.Name:lower():find("egg") or obj.Name:lower():find("nest")) then
+                                if not obj:FindFirstChild("SAE_EggESP") then
+                                    local hl = Instance.new("Highlight", obj)
+                                    hl.Name = "SAE_EggESP"
+                                    hl.FillColor = Color3.fromRGB(168, 85, 247)
+                                    hl.OutlineColor = Color3.fromRGB(255, 255, 255)
+                                end
+                            end
+                        end
+                    end)
+                    task.wait(2)
+                end
+                pcall(function()
+                    for _, obj in pairs(workspace:GetDescendants()) do
+                        if obj.Name == "SAE_EggESP" then obj:Destroy() end
+                    end
+                end)
+            end)
+        end, 6)
+
+        -- --- 4. PETS WIKI PAGE ---
+        local petsPage = catPages["Pets Wiki"]
+        local pInfo = Instance.new("TextLabel", petsPage)
+        pInfo.Size = UDim2.new(1, -12, 0, 140)
+        pInfo.Position = UDim2.new(0, 6, 0, 6)
+        pInfo.BackgroundTransparency = 1
+        pInfo.Text = "• Forest Pets: Chicken, Dog ($1-$2/s)\n• Desert Pets: Scorpion, Camel ($15-$45/s)\n• Volcano Pets: Magma Imp ($120/s)\n• Void Pets: Void Dragon (Secret, $5k/s)"
+        pInfo.TextColor3 = Color3.fromRGB(200, 200, 210)
+        pInfo.TextSize = 10
+        pInfo.Font = Enum.Font.Gotham
+        pInfo.TextXAlignment = Enum.TextXAlignment.Left
+        pInfo.TextWrapped = true
+
+        print("Steal An Egg Ultimate Master Script Loaded Successfully!")
     end)
-    if not success then warn(err) end
+    if not success then
+        warn("Error:", err)
+    end
 end)
