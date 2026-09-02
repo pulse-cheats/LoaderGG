@@ -1,6 +1,6 @@
 --[[
     ================================================================
-    ⚔️ STEAL AN EGG - 100% FULL ENGINE + NEW COMPACT SKETCHED UI & SETTINGS
+    ⚔️ STEAL AN EGG - 100% ORIGINAL ENGINE + SKETCHED UI & ALL SETTINGS
     ================================================================
 --]]
 
@@ -14,7 +14,7 @@ local CoreGui = game:GetService("CoreGui")
 local LocalPlayer = Players.LocalPlayer
 local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
 
--- Game Data & Waypoints
+-- Waypoints & Config
 local GameData = {
     StartSpawn = Vector3.new(535.99, 71.11, -366.34),
     AmbushPoint = Vector3.new(650.00, 71.11, -350.00),
@@ -41,27 +41,20 @@ local GameData = {
         { name = "Stage 9", pos = Vector3.new(3393.07, 71.11, -324.87) },
         { name = "Stage 10", pos = Vector3.new(4026.32, 71.11, -397.62) },
         { name = "Stage 11", pos = Vector3.new(4797.51, 71.11, -327.99) },
-    },
-
-    Treadmills = {
-        Vector3.new(501.36, 71.50, -324.72),
-        Vector3.new(498.22, 71.11, -447.13),
-        Vector3.new(527.67, 71.11, -444.30),
-        Vector3.new(500.37, 71.11, -374.79),
-        Vector3.new(531.45, 71.11, -281.16),
-        Vector3.new(478.57, 71.11, -232.79),
     }
 }
 
--- State & Settings
 local State = {
+    CurrentMode = "FARM",
     Running = false,
-    SelectedStageIdx = 1,
-    SelectedPlot = "Plot 1",
-    NormalSpeed = 16,
-    SprintSpeed = 32,
+    SelectedStageIndex = 1,
+    SelectedPlotName = "Plot 1",
     Status = "Idle",
     EggsCollected = 0,
+    PlayersKilled = 0,
+    SprintSpeed = 42,
+    ApproachSpeed = 22,
+    NormalSpeed = 16,
     AutoTreadmill = false,
     StealOnlySecret = false,
     StealBiggerSize = false,
@@ -69,32 +62,24 @@ local State = {
     FPSBoost = false
 }
 
--- Character & Movement Utilities
-local function GetChar() return LocalPlayer.Character end
-local function GetHumanoid() local c = GetChar() return c and c:FindFirstChildOfClass("Humanoid") end
-local function GetHRP() local c = GetChar() return c and c:FindFirstChild("HumanoidRootPart") end
+-- Character Helpers
+local function GetChar()
+    return LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+end
+
+local function GetHumanoid()
+    local c = GetChar()
+    return c and c:WaitForChild("Humanoid", 4)
+end
+
+local function GetHRP()
+    local c = GetChar()
+    return c and c:WaitForChild("HumanoidRootPart", 4)
+end
 
 local function SetPlayerSpeed(speed)
     local hum = GetHumanoid()
     if hum then hum.WalkSpeed = speed end
-end
-
-local function ApplyAnimationFreeze(enabled)
-    pcall(function()
-        local char = GetChar()
-        if not char then return end
-        local animScript = char:FindFirstChild("Animate")
-        if animScript then animScript.Enabled = not enabled end
-        local hum = GetHumanoid()
-        if hum then
-            local animator = hum:FindFirstChildOfClass("Animator")
-            if animator then
-                for _, track in ipairs(animator:GetPlayingAnimationTracks()) do
-                    if enabled then track:AdjustSpeed(0) else track:AdjustSpeed(1) end
-                end
-            end
-        end
-    end)
 end
 
 local function SafeWalkTo(targetPos, timeout, threshold, speed)
@@ -103,15 +88,11 @@ local function SafeWalkTo(targetPos, timeout, threshold, speed)
     if not hrp or not hum then return false end
     
     if speed then SetPlayerSpeed(speed) end
-    if State.FreezeAnimations then ApplyAnimationFreeze(true) end
     hum:MoveTo(targetPos)
     
     local startTime = tick()
     while tick() - startTime < (timeout or 5) do
-        if not State.Running then 
-            if State.FreezeAnimations then ApplyAnimationFreeze(false) end
-            return false 
-        end
+        if not State.Running then return false end
         if (hrp.Position - targetPos).Magnitude <= (threshold or 6) then
             return true
         end
@@ -130,28 +111,15 @@ local function InstantTriggerSteal()
     end)
 end
 
--- Auto Plot Detection
-local function AutoDetectPlot()
-    local hrp = GetHRP()
-    if not hrp then return "Plot 1" end
-    for plotName, pos in pairs(GameData.Plots) do
-        if (hrp.Position - pos).Magnitude < 90 then
-            return plotName
-        end
-    end
-    return "Plot 1"
-end
-State.SelectedPlot = AutoDetectPlot()
-
--- Main Auto Farm Loop
+-- Main Auto Farm Loop (Original Engine Logic)
 task.spawn(function()
     while true do
         task.wait(0.1)
-        if State.Running then
+        if State.Running and State.CurrentMode == "FARM" then
             local hum = GetHumanoid()
             local hrp = GetHRP()
             if hrp and hum then
-                local stageData = GameData.Stages[State.SelectedStageIdx]
+                local stageData = GameData.Stages[State.SelectedStageIndex]
                 if stageData then
                     State.Status = "🏃 RUSHING TO " .. stageData.name .. " 💨"
                     SafeWalkTo(stageData.pos, 5, 8, State.SprintSpeed)
@@ -166,8 +134,8 @@ task.spawn(function()
                         State.Status = "⚡ EVADING NPC -> RUSHING TO SPAWN! 🏃💨"
                         SafeWalkTo(GameData.StartSpawn, 4.5, 12, State.SprintSpeed)
                         
-                        local plotPos = GameData.Plots[State.SelectedPlot] or GameData.Plots["Plot 1"]
-                        State.Status = "🏠 RETURNING TO " .. State.SelectedPlot .. " 🏁"
+                        local plotPos = GameData.Plots[State.SelectedPlotName] or GameData.Plots["Plot 1"]
+                        State.Status = "🏠 RETURNING TO " .. State.SelectedPlotName .. " 🏁"
                         SafeWalkTo(plotPos, 4.5, 8, State.SprintSpeed)
                         
                         State.EggsCollected = State.EggsCollected + 1
@@ -178,15 +146,16 @@ task.spawn(function()
             end
         else
             SetPlayerSpeed(State.NormalSpeed)
-            if State.FreezeAnimations then ApplyAnimationFreeze(false) end
-            State.Status = "⏹️ Idle"
+            if not State.Running and State.Status ~= "Idle" then
+                State.Status = "⏹️ Idle"
+            end
         end
     end
 end)
 
--- [[ CUSTOM COMPACT SKETCHED UI WITH TABS, AVATAR, & SETTINGS ]]
+-- [[ REFINED SKETCHED UI & NEW FEATURES ]]
 pcall(function()
-    local parentObj = (gethui and gethui()) or CoreGui or LocalPlayer:WaitForChild("PlayerGui")
+    local parentObj = (gethui and gethui()) or CoreGui or PlayerGui
     for _, child in ipairs(parentObj:GetChildren()) do
         if child.Name == "StealAnEggSketchUI" or child.Name == "StealEgg_Clean" then
             child:Destroy()
@@ -200,7 +169,7 @@ ScreenGui.ResetOnSpawn = false
 pcall(function()
     if gethui then ScreenGui.Parent = gethui() else ScreenGui.Parent = CoreGui end
 end)
-if not ScreenGui.Parent then ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui") end
+if not ScreenGui.Parent then ScreenGui.Parent = PlayerGui end
 
 -- Floating Toggle Button
 local ToggleBtn = Instance.new("TextButton")
@@ -215,10 +184,10 @@ local tStroke = Instance.new("UIStroke", ToggleBtn)
 tStroke.Color = Color3.fromRGB(56, 189, 248)
 tStroke.Thickness = 2
 
--- Main Window (Compact Square Layout: 440 x 320)
+-- Main Window (Compact Square Layout: 460 x 340)
 local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(0, 440, 0, 320)
-MainFrame.Position = UDim2.new(0.5, -220, 0.5, -160)
+MainFrame.Size = UDim2.new(0, 460, 0, 340)
+MainFrame.Position = UDim2.new(0.5, -230, 0.5, -170)
 MainFrame.BackgroundColor3 = Color3.fromRGB(15, 23, 42)
 MainFrame.Visible = true
 MainFrame.Parent = ScreenGui
@@ -303,7 +272,7 @@ for i, tName in ipairs(tabs) do
     page.Size = UDim2.new(1, 0, 1, 0)
     page.BackgroundTransparency = 1
     page.Visible = (i == 1)
-    page.CanvasSize = UDim2.new(0, 0, 0, 250)
+    page.CanvasSize = UDim2.new(0, 0, 0, 300)
     page.ScrollBarThickness = 3
     page.Parent = ContentArea
     tabPages[tName] = page
@@ -328,27 +297,49 @@ hTitle.Font = Enum.Font.GothamBold
 
 local autoLbl = Instance.new("TextLabel", home)
 autoLbl.Size = UDim2.new(0, 150, 0, 30)
-autoLbl.Position = UDim2.new(0, 0, 0, 35)
+autoLbl.Position = UDim2.new(0, 0, 0, 30)
 autoLbl.BackgroundTransparency = 1
 autoLbl.Text = "auto steal"
 autoLbl.TextColor3 = Color3.fromRGB(255, 255, 255)
 autoLbl.TextSize = 14
 autoLbl.Font = Enum.Font.GothamBold
 autoLbl.TextXAlignment = Enum.TextXAlignment.Left
+autoLbl.Parent = home
 
 local autoBtn = Instance.new("TextButton", home)
 autoBtn.Size = UDim2.new(0, 55, 0, 26)
-autoBtn.Position = UDim2.new(0, 165, 0, 37)
-autoBtn.BackgroundColor3 = State.Running and Color3.fromRGB(220, 38, 38) or Color3.fromRGB(22, 163, 74)
+autoBtn.Position = UDim2.new(0, 165, 0, 32)
+autoBtn.BackgroundColor3 = State.Running and Color3.fromRGB(22, 163, 74) or Color3.fromRGB(30, 41, 59)
 autoBtn.Text = State.Running and "ON" or "OFF"
 autoBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 autoBtn.TextSize = 12
+autoBtn.Parent = home
 Instance.new("UICorner", autoBtn).CornerRadius = UDim.new(1, 0)
 
 autoBtn.MouseButton1Click:Connect(function()
     State.Running = not State.Running
-    autoBtn.BackgroundColor3 = State.Running and Color3.fromRGB(220, 38, 38) or Color3.fromRGB(22, 163, 74)
+    autoBtn.BackgroundColor3 = State.Running and Color3.fromRGB(22, 163, 74) or Color3.fromRGB(30, 41, 59)
     autoBtn.Text = State.Running and "ON" or "OFF"
+    if State.Running then State.CurrentMode = "FARM" else State.CurrentMode = "IDLE" end
+end)
+
+local statusLbl = Instance.new("TextLabel", home)
+statusLbl.Size = UDim2.new(1, 0, 0, 35)
+statusLbl.Position = UDim2.new(0, 0, 0, 70)
+statusLbl.BackgroundTransparency = 1
+statusLbl.Text = "Status: Idle"
+statusLbl.TextColor3 = Color3.fromRGB(148, 163, 184)
+statusLbl.TextSize = 12
+statusLbl.Font = Enum.Font.Gotham
+statusLbl.TextXAlignment = Enum.TextXAlignment.Left
+statusLbl.TextWrapped = true
+statusLbl.Parent = home
+
+task.spawn(function()
+    while true do
+        task.wait(0.2)
+        pcall(function() statusLbl.Text = "Status: " .. tostring(State.Status) end)
+    end
 end)
 
 -- --- PVP PAGE ---
@@ -363,21 +354,23 @@ pTitle.Font = Enum.Font.GothamBold
 
 local s1Lbl = Instance.new("TextLabel", pvp)
 s1Lbl.Size = UDim2.new(0, 150, 0, 30)
-s1Lbl.Position = UDim2.new(0, 0, 0, 35)
+s1Lbl.Position = UDim2.new(0, 0, 0, 30)
 s1Lbl.BackgroundTransparency = 1
 s1Lbl.Text = "Steal only secret"
 s1Lbl.TextColor3 = Color3.fromRGB(255, 255, 255)
 s1Lbl.TextSize = 13
 s1Lbl.Font = Enum.Font.GothamBold
 s1Lbl.TextXAlignment = Enum.TextXAlignment.Left
+s1Lbl.Parent = pvp
 
 local s1Btn = Instance.new("TextButton", pvp)
 s1Btn.Size = UDim2.new(0, 55, 0, 26)
-s1Btn.Position = UDim2.new(0, 165, 0, 37)
+s1Btn.Position = UDim2.new(0, 165, 0, 32)
 s1Btn.BackgroundColor3 = Color3.fromRGB(30, 41, 59)
 s1Btn.Text = "OFF"
 s1Btn.TextColor3 = Color3.fromRGB(255, 255, 255)
 s1Btn.TextSize = 12
+s1Btn.Parent = pvp
 Instance.new("UICorner", s1Btn).CornerRadius = UDim.new(1, 0)
 
 s1Btn.MouseButton1Click:Connect(function()
@@ -388,21 +381,23 @@ end)
 
 local s2Lbl = Instance.new("TextLabel", pvp)
 s2Lbl.Size = UDim2.new(0, 150, 0, 30)
-s2Lbl.Position = UDim2.new(0, 0, 0, 75)
+s2Lbl.Position = UDim2.new(0, 0, 0, 70)
 s2Lbl.BackgroundTransparency = 1
 s2Lbl.Text = "Steal bigger size eggs"
 s2Lbl.TextColor3 = Color3.fromRGB(255, 255, 255)
 s2Lbl.TextSize = 13
 s2Lbl.Font = Enum.Font.GothamBold
 s2Lbl.TextXAlignment = Enum.TextXAlignment.Left
+s2Lbl.Parent = pvp
 
 local s2Btn = Instance.new("TextButton", pvp)
 s2Btn.Size = UDim2.new(0, 55, 0, 26)
-s2Btn.Position = UDim2.new(0, 165, 0, 77)
+s2Btn.Position = UDim2.new(0, 165, 0, 72)
 s2Btn.BackgroundColor3 = Color3.fromRGB(30, 41, 59)
 s2Btn.Text = "OFF"
 s2Btn.TextColor3 = Color3.fromRGB(255, 255, 255)
 s2Btn.TextSize = 12
+s2Btn.Parent = pvp
 Instance.new("UICorner", s2Btn).CornerRadius = UDim.new(1, 0)
 
 s2Btn.MouseButton1Click:Connect(function()
@@ -416,14 +411,67 @@ local farm = tabPages["Farm"]
 local fTitle = Instance.new("TextLabel", farm)
 fTitle.Size = UDim2.new(1, 0, 0, 24)
 fTitle.BackgroundTransparency = 1
-fTitle.Text = "(Tab title) Auto Farm & Treadmill"
+fTitle.Text = "(Tab title) Auto Farm & Stages"
 fTitle.TextColor3 = Color3.fromRGB(34, 197, 94)
 fTitle.TextSize = 13
 fTitle.Font = Enum.Font.GothamBold
 
+local stageLbl = Instance.new("TextLabel", farm)
+stageLbl.Size = UDim2.new(0, 140, 0, 26)
+stageLbl.Position = UDim2.new(0, 0, 0, 30)
+stageLbl.BackgroundTransparency = 1
+stageLbl.Text = "Stage: Stage 1"
+stageLbl.TextColor3 = Color3.fromRGB(255, 255, 255)
+stageLbl.TextSize = 13
+stageLbl.Font = Enum.Font.GothamBold
+stageLbl.TextXAlignment = Enum.TextXAlignment.Left
+
+local stageBtn = Instance.new("TextButton", farm)
+stageBtn.Size = UDim2.new(0, 75, 0, 26)
+stageBtn.Position = UDim2.new(0, 150, 0, 30)
+stageBtn.BackgroundColor3 = Color3.fromRGB(30, 41, 59)
+stageBtn.Text = "Change ➔"
+stageBtn.TextColor3 = Color3.fromRGB(56, 189, 248)
+stageBtn.TextSize = 11
+Instance.new("UICorner", stageBtn).CornerRadius = UDim.new(0, 6)
+
+stageBtn.MouseButton1Click:Connect(function()
+    State.SelectedStageIndex = State.SelectedStageIndex + 1
+    if State.SelectedStageIndex > #GameData.Stages then State.SelectedStageIndex = 1 end
+    stageLbl.Text = "Stage: " .. GameData.Stages[State.SelectedStageIndex].name
+end)
+
+local plotLbl = Instance.new("TextLabel", farm)
+plotLbl.Size = UDim2.new(0, 140, 0, 26)
+plotLbl.Position = UDim2.new(0, 0, 0, 66)
+plotLbl.BackgroundTransparency = 1
+plotLbl.Text = "Plot: Plot 1"
+plotLbl.TextColor3 = Color3.fromRGB(255, 255, 255)
+plotLbl.TextSize = 13
+plotLbl.Font = Enum.Font.GothamBold
+plotLbl.TextXAlignment = Enum.TextXAlignment.Left
+
+local plotBtn = Instance.new("TextButton", farm)
+plotBtn.Size = UDim2.new(0, 75, 0, 26)
+plotBtn.Position = UDim2.new(0, 150, 0, 66)
+plotBtn.BackgroundColor3 = Color3.fromRGB(30, 41, 59)
+plotBtn.Text = "Change ➔"
+plotBtn.TextColor3 = Color3.fromRGB(56, 189, 248)
+plotBtn.TextSize = 11
+Instance.new("UICorner", plotBtn).CornerRadius = UDim.new(0, 6)
+
+local plotNames = {"Plot 1", "Plot 2", "Plot 3", "Plot 4", "Plot 5", "Plot 6", "Plot 7"}
+local plotIdx = 1
+plotBtn.MouseButton1Click:Connect(function()
+    plotIdx = plotIdx + 1
+    if plotIdx > #plotNames then plotIdx = 1 end
+    State.SelectedPlotName = plotNames[plotIdx]
+    plotLbl.Text = "Plot: " .. State.SelectedPlotName
+end)
+
 local tLbl = Instance.new("TextLabel", farm)
-tLbl.Size = UDim2.new(0, 150, 0, 30)
-tLbl.Position = UDim2.new(0, 0, 0, 35)
+tLbl.Size = UDim2.new(0, 140, 0, 30)
+tLbl.Position = UDim2.new(0, 0, 0, 104)
 tLbl.BackgroundTransparency = 1
 tLbl.Text = "Auto Treadmill"
 tLbl.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -433,7 +481,7 @@ tLbl.TextXAlignment = Enum.TextXAlignment.Left
 
 local tBtn = Instance.new("TextButton", farm)
 tBtn.Size = UDim2.new(0, 55, 0, 26)
-tBtn.Position = UDim2.new(0, 165, 0, 37)
+tBtn.Position = UDim2.new(0, 150, 0, 106)
 tBtn.BackgroundColor3 = Color3.fromRGB(30, 41, 59)
 tBtn.Text = "OFF"
 tBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -446,7 +494,25 @@ tBtn.MouseButton1Click:Connect(function()
     tBtn.Text = State.AutoTreadmill and "ON" or "OFF"
 end)
 
--- --- OTHERS PAGE (SETTINGS) ---
+task.spawn(function()
+    while true do
+        task.wait(1)
+        if State.AutoTreadmill then
+            pcall(function()
+                local hrp = GetHRP()
+                local hum = GetHumanoid()
+                if hrp and hum then
+                    local targetPos = GameData.Plots[State.SelectedPlotName] or GameData.Plots["Plot 1"]
+                    if (hrp.Position - targetPos).Magnitude > 8 then
+                        hum:MoveTo(targetPos)
+                    end
+                end
+            end)
+        end
+    end
+end)
+
+-- --- OTHERS PAGE ---
 local others = tabPages["Others"]
 local oTitle = Instance.new("TextLabel", others)
 oTitle.Size = UDim2.new(1, 0, 0, 24)
@@ -458,7 +524,7 @@ oTitle.Font = Enum.Font.GothamBold
 
 local animLbl = Instance.new("TextLabel", others)
 animLbl.Size = UDim2.new(0, 150, 0, 30)
-animLbl.Position = UDim2.new(0, 0, 0, 35)
+animLbl.Position = UDim2.new(0, 0, 0, 30)
 animLbl.BackgroundTransparency = 1
 animLbl.Text = "Freeze Animations"
 animLbl.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -468,7 +534,7 @@ animLbl.TextXAlignment = Enum.TextXAlignment.Left
 
 local animBtn = Instance.new("TextButton", others)
 animBtn.Size = UDim2.new(0, 55, 0, 26)
-animBtn.Position = UDim2.new(0, 165, 0, 37)
+animBtn.Position = UDim2.new(0, 165, 0, 32)
 animBtn.BackgroundColor3 = Color3.fromRGB(22, 163, 74)
 animBtn.Text = "ON"
 animBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -483,7 +549,7 @@ end)
 
 local fpsLbl = Instance.new("TextLabel", others)
 fpsLbl.Size = UDim2.new(0, 150, 0, 30)
-fpsLbl.Position = UDim2.new(0, 0, 0, 75)
+fpsLbl.Position = UDim2.new(0, 0, 0, 70)
 fpsLbl.BackgroundTransparency = 1
 fpsLbl.Text = "FPS Boost"
 fpsLbl.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -493,7 +559,7 @@ fpsLbl.TextXAlignment = Enum.TextXAlignment.Left
 
 local fpsBtn = Instance.new("TextButton", others)
 fpsBtn.Size = UDim2.new(0, 55, 0, 26)
-fpsBtn.Position = UDim2.new(0, 165, 0, 77)
+fpsBtn.Position = UDim2.new(0, 165, 0, 72)
 fpsBtn.BackgroundColor3 = Color3.fromRGB(30, 41, 59)
 fpsBtn.Text = "OFF"
 fpsBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -513,21 +579,3 @@ fpsBtn.MouseButton1Click:Connect(function()
         end)
     end
 end)
-
--- Background loop for Auto Treadmill
-task.spawn(function()
-    while true do
-        task.wait(0.2)
-        if State.AutoTreadmill then
-            pcall(function()
-                local hrp = GetHRP()
-                if hrp and GameData.Treadmills then
-                    local t = GameData.Treadmills[math.random(1, #GameData.Treadmills)]
-                    hrp.CFrame = CFrame.new(t + Vector3.new(0, 3, 0))
-                end
-            end)
-        end
-    end
-end)
-
-print("Steal An Egg Complete Script with Compact Sketched UI & Settings Loaded Successfully!")
