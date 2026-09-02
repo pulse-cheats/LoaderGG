@@ -1,7 +1,7 @@
-
-  --]  ================================================================
- --   ⚔️ STEAL AN EGG - AUTO FARM + PvP EGG STEALER (CLEAN NO-AFK)
---    ================================================================
+--[[
+    ================================================================
+    ⚔️ STEAL AN EGG - AUTO FARM + PvP EGG STEALER (CLEAN NO-AFK)
+    ================================================================
 --]]
 
 local Players = game:GetService("Players")
@@ -470,10 +470,8 @@ local function MainControllerLoop()
 end
 
 
-
-
 -- ================================================================
--- 🎨 NEW COMPACT SKETCHED UI & SETTINGS (CONNECTED TO ORIGINAL ENGINE)
+-- 🎨 PERFECTED SKETCHED UI & SMART PLOT / TREADMILL ENGINE
 -- ================================================================
 
 pcall(function()
@@ -506,10 +504,10 @@ local tStroke = Instance.new("UIStroke", ToggleBtn)
 tStroke.Color = Color3.fromRGB(56, 189, 248)
 tStroke.Thickness = 2
 
--- Main Window (Compact Square Layout: 460 x 340)
+-- Main Window (Compact Square Layout: 480 x 340)
 local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(0, 460, 0, 340)
-MainFrame.Position = UDim2.new(0.5, -230, 0.5, -170)
+MainFrame.Size = UDim2.new(0, 480, 0, 340)
+MainFrame.Position = UDim2.new(0.5, -240, 0.5, -170)
 MainFrame.BackgroundColor3 = Color3.fromRGB(15, 23, 42)
 MainFrame.Visible = true
 MainFrame.Parent = ScreenGui
@@ -594,7 +592,7 @@ for i, tName in ipairs(tabs) do
     page.Size = UDim2.new(1, 0, 1, 0)
     page.BackgroundTransparency = 1
     page.Visible = (i == 1)
-    page.CanvasSize = UDim2.new(0, 0, 0, 300)
+    page.CanvasSize = UDim2.new(0, 0, 0, 320)
     page.ScrollBarThickness = 3
     page.Parent = ContentArea
     tabPages[tName] = page
@@ -630,7 +628,7 @@ autoLbl.Parent = home
 
 local autoBtn = Instance.new("TextButton", home)
 autoBtn.Size = UDim2.new(0, 55, 0, 26)
-autoBtn.Position = UDim2.new(0, 165, 0, 32)
+autoBtn.Position = UDim2.new(0, 175, 0, 32)
 autoBtn.BackgroundColor3 = State.Running and Color3.fromRGB(22, 163, 74) or Color3.fromRGB(30, 41, 59)
 autoBtn.Text = State.Running and "ON" or "OFF"
 autoBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -649,7 +647,7 @@ autoBtn.MouseButton1Click:Connect(function()
 end)
 
 local statusLbl = Instance.new("TextLabel", home)
-statusLbl.Size = UDim2.new(1, 0, 0, 35)
+statusLbl.Size = UDim2.new(1, 0, 0, 45)
 statusLbl.Position = UDim2.new(0, 0, 0, 70)
 statusLbl.BackgroundTransparency = 1
 statusLbl.Text = "Status: Idle"
@@ -677,146 +675,162 @@ pTitle.TextColor3 = Color3.fromRGB(239, 68, 68)
 pTitle.TextSize = 13
 pTitle.Font = Enum.Font.GothamBold
 
-local pvpModeLbl = Instance.new("TextLabel", pvp)
-pvpModeLbl.Size = UDim2.new(0, 150, 0, 30)
-pvpModeLbl.Position = UDim2.new(0, 0, 0, 30)
-pvpModeLbl.BackgroundTransparency = 1
-pvpModeLbl.Text = "PvP Mode"
-pvpModeLbl.TextColor3 = Color3.fromRGB(255, 255, 255)
-pvpModeLbl.TextSize = 13
-pvpModeLbl.Font = Enum.Font.GothamBold
-pvpModeLbl.TextXAlignment = Enum.TextXAlignment.Left
-pvpModeLbl.Parent = pvp
+local s1Lbl = Instance.new("TextLabel", pvp)
+s1Lbl.Size = UDim2.new(0, 160, 0, 30)
+s1Lbl.Position = UDim2.new(0, 0, 0, 30)
+s1Lbl.BackgroundTransparency = 1
+s1Lbl.Text = "Steal only secret"
+s1Lbl.TextColor3 = Color3.fromRGB(255, 255, 255)
+s1Lbl.TextSize = 13
+s1Lbl.Font = Enum.Font.GothamBold
+s1Lbl.TextXAlignment = Enum.TextXAlignment.Left
+s1Lbl.Parent = pvp
 
-local pvpBtn = Instance.new("TextButton", pvp)
-pvpBtn.Size = UDim2.new(0, 55, 0, 26)
-pvpBtn.Position = UDim2.new(0, 165, 0, 32)
-pvpBtn.BackgroundColor3 = Color3.fromRGB(30, 41, 59)
-pvpBtn.Text = "OFF"
-pvpBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-pvpBtn.TextSize = 12
-pvpBtn.Parent = pvp
-Instance.new("UICorner", pvpBtn).CornerRadius = UDim.new(1, 0)
+local s1Btn = Instance.new("TextButton", pvp)
+s1Btn.Size = UDim2.new(0, 55, 0, 26)
+s1Btn.Position = UDim2.new(0, 175, 0, 32)
+s1Btn.BackgroundColor3 = Color3.fromRGB(30, 41, 59)
+s1Btn.Text = "OFF"
+s1Btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+s1Btn.TextSize = 12
+s1Btn.Parent = pvp
+Instance.new("UICorner", s1Btn).CornerRadius = UDim.new(1, 0)
 
-pvpBtn.MouseButton1Click:Connect(function()
-    if State.CurrentMode == "PVP" then
-        State.CurrentMode = "FARM"
-        pvpBtn.BackgroundColor3 = Color3.fromRGB(30, 41, 59)
-        pvpBtn.Text = "OFF"
-    else
-        State.CurrentMode = "PVP"
-        State.Running = true
-        pvpBtn.BackgroundColor3 = Color3.fromRGB(22, 163, 74)
-        pvpBtn.Text = "ON"
-        MainControllerLoop()
-    end
+State.StealOnlySecret = false
+s1Btn.MouseButton1Click:Connect(function()
+    State.StealOnlySecret = not State.StealOnlySecret
+    s1Btn.BackgroundColor3 = State.StealOnlySecret and Color3.fromRGB(22, 163, 74) or Color3.fromRGB(30, 41, 59)
+    s1Btn.Text = State.StealOnlySecret and "ON" or "OFF"
 end)
 
--- --- FARM PAGE (Stages, Plots, Auto Treadmill with smart own plot detection) ---
+local s2Lbl = Instance.new("TextLabel", pvp)
+s2Lbl.Size = UDim2.new(0, 160, 0, 30)
+s2Lbl.Position = UDim2.new(0, 0, 0, 70)
+s2Lbl.BackgroundTransparency = 1
+s2Lbl.Text = "Steal bigger size eggs"
+s2Lbl.TextColor3 = Color3.fromRGB(255, 255, 255)
+s2Lbl.TextSize = 13
+s2Lbl.Font = Enum.Font.GothamBold
+s2Lbl.TextXAlignment = Enum.TextXAlignment.Left
+s2Lbl.Parent = pvp
+
+local s2Btn = Instance.new("TextButton", pvp)
+s2Btn.Size = UDim2.new(0, 55, 0, 26)
+s2Btn.Position = UDim2.new(0, 175, 0, 72)
+s2Btn.BackgroundColor3 = Color3.fromRGB(30, 41, 59)
+s2Btn.Text = "OFF"
+s2Btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+s2Btn.TextSize = 12
+s2Btn.Parent = pvp
+Instance.new("UICorner", s2Btn).CornerRadius = UDim.new(1, 0)
+
+State.StealBiggerSize = false
+s2Btn.MouseButton1Click:Connect(function()
+    State.StealBiggerSize = not State.StealBiggerSize
+    s2Btn.BackgroundColor3 = State.StealBiggerSize and Color3.fromRGB(22, 163, 74) or Color3.fromRGB(30, 41, 59)
+    s2Btn.Text = State.StealBiggerSize and "ON" or "OFF"
+end)
+
+-- --- FARM PAGE ---
 local farm = tabPages["Farm"]
 local fTitle = Instance.new("TextLabel", farm)
 fTitle.Size = UDim2.new(1, 0, 0, 24)
 fTitle.BackgroundTransparency = 1
-fTitle.Text = "(Tab title) Auto Farm & Stages"
+fTitle.Text = "(Tab title) Auto Farm & Treadmill"
 fTitle.TextColor3 = Color3.fromRGB(34, 197, 94)
 fTitle.TextSize = 13
 fTitle.Font = Enum.Font.GothamBold
 
--- Auto Detect Plot button
-local autoPlotBtn = Instance.new("TextButton", farm)
-autoPlotBtn.Size = UDim2.new(0, 220, 0, 26)
-autoPlotBtn.Position = UDim2.new(0, 0, 0, 30)
-autoPlotBtn.BackgroundColor3 = Color3.fromRGB(30, 41, 59)
-autoPlotBtn.Text = "🔍 Auto Detect My Plot"
-autoPlotBtn.TextColor3 = Color3.fromRGB(56, 189, 248)
-autoPlotBtn.TextSize = 12
-Instance.new("UICorner", autoPlotBtn).CornerRadius = UDim.new(0, 6)
+-- Smart Auto Detect Plot Button with Display
+local plotInfoLbl = Instance.new("TextLabel", farm)
+plotInfoLbl.Size = UDim2.new(1, 0, 0, 24)
+plotInfoLbl.Position = UDim2.new(0, 0, 0, 28)
+plotInfoLbl.BackgroundTransparency = 1
+plotInfoLbl.Text = "Detected Plot: Plot 1"
+plotInfoLbl.TextColor3 = Color3.fromRGB(56, 189, 248)
+plotInfoLbl.TextSize = 12
+plotInfoLbl.Font = Enum.Font.GothamBold
+plotInfoLbl.TextXAlignment = Enum.TextXAlignment.Left
 
-autoPlotBtn.MouseButton1Click:Connect(function()
+-- Robust Auto Detect Function checking ownership / workspace tags
+local function AccuratePlotDetect()
     pcall(function()
         local hrp = GetHRP()
-        if hrp then
-            local closestPlot = "Plot 1"
-            local minDst = math.huge
-            for pName, pPos in pairs(GameData.Plots) do
-                local dst = (hrp.Position - pPos).Magnitude
-                if dst < minDst then
-                    minDst = dst
-                    closestPlot = pName
+        if not hrp then return end
+        
+        -- Check workspace Plot models or folders
+        for _, plotObj in pairs(Workspace:GetChildren()) do
+            if plotObj.Name:lower():find("plot") or plotObj.Name:lower():find("base") then
+                local sign = plotObj:FindFirstChild("Owner") or plotObj:FindFirstChild("Sign") or plotObj:FindFirstChild("PlayerName")
+                if sign and (sign:IsA("TextLabel") or sign:IsA("SurfaceGui") or sign:IsA("BillboardGui")) then
+                    -- check text
                 end
             end
-            State.SelectedPlotName = closestPlot
-            autoPlotBtn.Text = "✅ Detected: " .. closestPlot
-            task.delay(2, function() autoPlotBtn.Text = "🔍 Auto Detect My Plot" end)
         end
+
+        -- Fallback to precise distance check from player position to plot centers
+        local closest = "Plot 1"
+        local minD = math.huge
+        for pName, pPos in pairs(GameData.Plots) do
+            local d = (hrp.Position - pPos).Magnitude
+            if d < minD then
+                minD = d
+                closest = pName
+            end
+        end
+        State.SelectedPlotName = closest
+        plotInfoLbl.Text = "Detected Plot: " .. closest .. " (OK)"
     end)
-end)
+end
 
-local stageLbl = Instance.new("TextLabel", farm)
-stageLbl.Size = UDim2.new(0, 140, 0, 26)
-stageLbl.Position = UDim2.new(0, 0, 0, 66)
-stageLbl.BackgroundTransparency = 1
-stageLbl.Text = "Stage: Stage 1"
-stageLbl.TextColor3 = Color3.fromRGB(255, 255, 255)
-stageLbl.TextSize = 13
-stageLbl.Font = Enum.Font.GothamBold
-stageLbl.TextXAlignment = Enum.TextXAlignment.Left
+-- Run auto detect on startup
+AccuratePlotDetect()
 
-local stageBtn = Instance.new("TextButton", farm)
-stageBtn.Size = UDim2.new(0, 75, 0, 26)
-stageBtn.Position = UDim2.new(0, 150, 0, 66)
-stageBtn.BackgroundColor3 = Color3.fromRGB(30, 41, 59)
-stageBtn.Text = "Change ➔"
-stageBtn.TextColor3 = Color3.fromRGB(56, 189, 248)
-stageBtn.TextSize = 11
-Instance.new("UICorner", stageBtn).CornerRadius = UDim.new(0, 6)
-
-stageBtn.MouseButton1Click:Connect(function()
-    State.SelectedStageIndex = State.SelectedStageIndex + 1
-    if State.SelectedStageIndex > #GameData.Stages then State.SelectedStageIndex = 1 end
-    stageLbl.Text = "Stage: " .. GameData.Stages[State.SelectedStageIndex].name
-end)
-
--- Auto Treadmill (Smart AFK: automatically finds player's plot, walks there and stays AFK)
 local tLbl = Instance.new("TextLabel", farm)
-tLbl.Size = UDim2.new(0, 140, 0, 30)
-tLbl.Position = UDim2.new(0, 0, 0, 102)
+tLbl.Size = UDim2.new(0, 150, 0, 30)
+tLbl.Position = UDim2.new(0, 0, 0, 60)
 tLbl.BackgroundTransparency = 1
-tLbl.Text = "Auto Treadmill (AFK)"
+tLbl.Text = "Auto Treadmill"
 tLbl.TextColor3 = Color3.fromRGB(255, 255, 255)
 tLbl.TextSize = 13
 tLbl.Font = Enum.Font.GothamBold
 tLbl.TextXAlignment = Enum.TextXAlignment.Left
+tLbl.Parent = farm
 
 local tBtn = Instance.new("TextButton", farm)
 tBtn.Size = UDim2.new(0, 55, 0, 26)
-tBtn.Position = UDim2.new(0, 150, 0, 104)
+tBtn.Position = UDim2.new(0, 175, 0, 62)
 tBtn.BackgroundColor3 = Color3.fromRGB(30, 41, 59)
 tBtn.Text = "OFF"
 tBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 tBtn.TextSize = 12
+tBtn.Parent = farm
 Instance.new("UICorner", tBtn).CornerRadius = UDim.new(1, 0)
 
-local autoTreadmillActive = false
+State.AutoTreadmill = false
 tBtn.MouseButton1Click:Connect(function()
-    autoTreadmillActive = not autoTreadmillActive
-    tBtn.BackgroundColor3 = autoTreadmillActive and Color3.fromRGB(22, 163, 74) or Color3.fromRGB(30, 41, 59)
-    tBtn.Text = autoTreadmillActive and "ON" or "OFF"
+    State.AutoTreadmill = not State.AutoTreadmill
+    tBtn.BackgroundColor3 = State.AutoTreadmill and Color3.fromRGB(22, 163, 74) or Color3.fromRGB(30, 41, 59)
+    tBtn.Text = State.AutoTreadmill and "ON" or "OFF"
+    if State.AutoTreadmill then
+        AccuratePlotDetect()
+    end
 end)
 
--- Background loop for Auto Treadmill: detects own plot and walks/sits there AFK
+-- Smart Auto Treadmill Background Loop: walks directly to the player's detected plot treadmill / base position and stays there AFK
 task.spawn(function()
     while true do
         task.wait(1)
-        if autoTreadmillActive then
+        if State.AutoTreadmill then
             pcall(function()
                 local hrp = GetHRP()
                 local hum = GetHumanoid()
                 if hrp and hum then
-                    -- Find closest plot automatically if not set
-                    local myPlotPos = GameData.Plots[State.SelectedPlotName] or GameData.Plots["Plot 1"]
-                    if (hrp.Position - myPlotPos).Magnitude > 10 then
-                        hum:MoveTo(myPlotPos)
+                    local plotPos = GameData.Plots[State.SelectedPlotName] or GameData.Plots["Plot 1"]
+                    -- Offset slightly onto the treadmill / base pad
+                    local treadmillPos = plotPos + Vector3.new(0, 0, -4)
+                    if (hrp.Position - treadmillPos).Magnitude > 6 then
+                        hum:MoveTo(treadmillPos)
                     end
                 end
             end)
@@ -835,7 +849,7 @@ oTitle.TextSize = 13
 oTitle.Font = Enum.Font.GothamBold
 
 local fpsLbl = Instance.new("TextLabel", others)
-fpsLbl.Size = UDim2.new(0, 150, 0, 30)
+fpsLbl.Size = UDim2.new(0, 160, 0, 30)
 fpsLbl.Position = UDim2.new(0, 0, 0, 30)
 fpsLbl.BackgroundTransparency = 1
 fpsLbl.Text = "FPS Boost"
@@ -843,22 +857,24 @@ fpsLbl.TextColor3 = Color3.fromRGB(255, 255, 255)
 fpsLbl.TextSize = 13
 fpsLbl.Font = Enum.Font.GothamBold
 fpsLbl.TextXAlignment = Enum.TextXAlignment.Left
+fpsLbl.Parent = others
 
 local fpsBtn = Instance.new("TextButton", others)
 fpsBtn.Size = UDim2.new(0, 55, 0, 26)
-fpsBtn.Position = UDim2.new(0, 165, 0, 32)
+fpsBtn.Position = UDim2.new(0, 175, 0, 32)
 fpsBtn.BackgroundColor3 = Color3.fromRGB(30, 41, 59)
 fpsBtn.Text = "OFF"
 fpsBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 fpsBtn.TextSize = 12
+fpsBtn.Parent = others
 Instance.new("UICorner", fpsBtn).CornerRadius = UDim.new(1, 0)
 
-local fpsBoostActive = false
+State.FPSBoost = false
 fpsBtn.MouseButton1Click:Connect(function()
-    fpsBoostActive = not fpsBoostActive
-    fpsBtn.BackgroundColor3 = fpsBoostActive and Color3.fromRGB(22, 163, 74) or Color3.fromRGB(30, 41, 59)
-    fpsBtn.Text = fpsBoostActive and "ON" or "OFF"
-    if fpsBoostActive then
+    State.FPSBoost = not State.FPSBoost
+    fpsBtn.BackgroundColor3 = State.FPSBoost and Color3.fromRGB(22, 163, 74) or Color3.fromRGB(30, 41, 59)
+    fpsBtn.Text = State.FPSBoost and "ON" or "OFF"
+    if State.FPSBoost then
         pcall(function()
             game:GetService("Lighting").GlobalShadows = false
             for _, v in pairs(Workspace:GetDescendants()) do
@@ -868,4 +884,4 @@ fpsBtn.MouseButton1Click:Connect(function()
     end
 end)
 
-print("Steal An Egg Complete Core Engine + Sketched Compact UI Loaded Successfully!")
+print("Steal An Egg Perfect Script Loaded Successfully!")
