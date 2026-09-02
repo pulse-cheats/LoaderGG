@@ -5,7 +5,7 @@
     ╚════════════════════════════════════════════════════════════════╝
 --]]
 
-local SCRIPT_URL = "https://raw.githubusercontent.com/USERNAME/REPOSITORY/main/sae.lua"
+local SCRIPT_URL = "https://raw.githubusercontent.com/pulse-cheats/LoaderGG/main/sae.lua"
 
 local success, err = pcall(function()
     loadstring(game:HttpGet(SCRIPT_URL, true))()
