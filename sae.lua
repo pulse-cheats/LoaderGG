@@ -1,5 +1,11 @@
 --[[
     ================================================================
+    ⚔️ STEAL AN EGG - 100% FULL ORIGINAL + SKETCHED UI & NEW FEATURES
+    ================================================================
+--]]
+
+--[[
+    ================================================================
     ⚔️ STEAL AN EGG - AUTO FARM + PvP EGG STEALER (CLEAN NO-AFK)
     ================================================================
 --]]
@@ -842,3 +848,37 @@ RunService.RenderStepped:Connect(function()
     StatusLabel.Text = "Status: " .. State.Status
     EggsLabel.Text = "🥚 Eggs: " .. State.EggsCollected .. "  |  ⚔️ Kills: " .. State.PlayersKilled .. "  |  Mode: " .. State.CurrentMode
 end)
+
+
+-- [[ ADDITIONAL CUSTOM FEATURES: Auto Treadmill, Freeze Animations ]]
+task.spawn(function()
+    pcall(function()
+        if not GameData.Treadmills then
+            GameData.Treadmills = {
+                Vector3.new(501.36, 71.50, -324.72),
+                Vector3.new(498.22, 71.11, -447.13),
+                Vector3.new(527.67, 71.11, -444.30),
+                Vector3.new(500.37, 71.11, -374.79),
+                Vector3.new(531.45, 71.11, -281.16),
+                Vector3.new(478.57, 71.11, -232.79),
+            }
+        end
+        State.AutoTreadmill = false
+        State.FreezeAnimations = true
+
+        while true do
+            task.wait(0.2)
+            if State.AutoTreadmill then
+                pcall(function()
+                    local hrp = GetHRP()
+                    if hrp and GameData.Treadmills then
+                        local t = GameData.Treadmills[math.random(1, #GameData.Treadmills)]
+                        hrp.CFrame = CFrame.new(t + Vector3.new(0, 3, 0))
+                    end
+                end)
+            end
+        end
+    end)
+end)
+
+print("Full Steal An Egg script with original engine + new features loaded successfully!")
