@@ -1,5 +1,5 @@
 
---[[   ================================================================
+--[[    ================================================================
     ⚔️ STEAL AN EGG - AUTO FARM + PvP EGG STEALER (CLEAN NO-AFK)
     ================================================================
 --]]
@@ -470,12 +470,11 @@ local function MainControllerLoop()
 end
 
 
-
-
 -- ================================================================
--- 🐾 EXPANDED PETS DATABASE & WIKI (105+ PETS & MULTIPLIERS)
+-- 🐾 PETS DATABASE JSON (DECODED SAFELY)
 -- ================================================================
-local PetsDatabase = [
+local HttpService = game:GetService("HttpService")
+local PetsJsonString = [[[
   {
     "biome": "Forest",
     "name": "Chicken",
@@ -1420,98 +1419,12 @@ local PetsDatabase = [
     "speed": "+0 Speed",
     "price": "$400b"
   }
-]
+]]]
 
--- ================================================================
--- 🌐 ADVANCED UTILITIES & ESP MODULES
--- ================================================================
-local Utilities = {}
-
-function Utilities.CreateESP(part, color, text)
-    pcall(function()
-        if not part then return end
-        local bill = Instance.new("BillboardGui")
-        bill.Name = "SAE_ESP"
-        bill.Size = UDim2.new(0, 100, 0, 40)
-        bill.AlwaysOnTop = true
-        bill.StudsOffset = Vector3.new(0, 3, 0)
-        bill.Parent = part
-        
-        local lbl = Instance.new("TextLabel", bill)
-        lbl.Size = UDim2.new(1, 0, 1, 0)
-        lbl.BackgroundTransparency = 1
-        lbl.Text = text or "EGG"
-        lbl.TextColor3 = color or Color3.fromRGB(56, 189, 248)
-        lbl.TextSize = 13
-        lbl.Font = Enum.Font.GothamBold
-    end)
-end
-
-function Utilities.RemoveESP()
-    pcall(function()
-        for _, obj in pairs(Workspace:GetDescendants()) do
-            if obj.Name == "SAE_ESP" then
-                obj:Destroy()
-            end
-        end
-    end)
-end
-
--- Anti-AFK Connection
-local VirtualUser = game:GetService("VirtualUser")
-LocalPlayer.Idled:Connect(function()
-    pcall(function()
-        VirtualUser:CaptureController()
-        VirtualUser:ClickButton2(Vector2.new())
-    end)
+local PetsList = {}
+pcall(function()
+    PetsList = HttpService:JSONDecode(PetsJsonString)
 end)
-
--- Additional helper functions to pad code robustly and add deep functionality
-local function DebugLog(msg)
-    if State and State.DebugMode then
-        print("[StealAnEgg Debug]: " .. tostring(msg))
-    end
-end
-
--- Full Teleport List definition for all stages & plots
-local TeleportLocations = {
-    {"Start Spawn", Vector3.new(535.99, 71.11, -366.34)},
-    {"Stage 1", Vector3.new(595.56, 71.11, -329.72)},
-    {"Stage 2", Vector3.new(742.04, 71.11, -409.11)},
-    {"Stage 3", Vector3.new(948.37, 71.11, -325.05)},
-    {"Stage 4", Vector3.new(1188.19, 71.11, -409.72)},
-    {"Stage 5", Vector3.new(1491.32, 71.11, -314.87)},
-    {"Stage 6", Vector3.new(1876.62, 71.11, -398.11)},
-    {"Stage 7", Vector3.new(2280.25, 71.11, -327.72)},
-    {"Stage 8", Vector3.new(2816.33, 71.11, -398.40)},
-    {"Stage 9", Vector3.new(3393.07, 71.11, -324.87)},
-    {"Stage 10", Vector3.new(4026.32, 71.11, -397.62)},
-    {"Stage 11", Vector3.new(4797.51, 71.11, -327.99)},
-    {"Plot 1", Vector3.new(459.94, 71.11, -429.17)},
-    {"Plot 2", Vector3.new(458.68, 71.11, -481.31)},
-    {"Plot 3", Vector3.new(522.99, 71.11, -489.49)},
-    {"Plot 4", Vector3.new(462.52, 71.11, -364.70)},
-    {"Plot 5", Vector3.new(461.95, 71.11, -301.24)},
-    {"Plot 6", Vector3.new(461.66, 71.11, -241.08)},
-    {"Plot 7", Vector3.new(521.48, 71.11, -242.86)},
-}
-
--- Notification Handler
-local StarterGui = game:GetService("StarterGui")
-local function SendNotification(title, text, duration)
-    pcall(function()
-        StarterGui:SetCore("SendNotification", {
-            Title = title or "Steal An Egg Pro",
-            Text = text or "",
-            Duration = duration or 3
-        })
-    end)
-end
-
--- Initialize Success Log
-SendNotification("Steal An Egg Loaded", "Professional Cyber UI & 105+ Pets Database active!", 4)
-
-
 
 -- ================================================================
 -- ⚡ PROFESSIONAL CYBER UI (MATCHING REFERENCE PHOTO)
@@ -1647,7 +1560,7 @@ for i, catName in ipairs(categories) do
     page.Size = UDim2.new(1, 0, 1, 0)
     page.BackgroundTransparency = 1
     page.Visible = (i == 1)
-    page.CanvasSize = UDim2.new(0, 0, 0, 500)
+    page.CanvasSize = UDim2.new(0, 0, 0, 600)
     page.ScrollBarThickness = 3
     page.Parent = ContentArea
     catPages[catName] = page
@@ -1795,46 +1708,33 @@ local petsPage = catPages["Pets"]
 local pTitle = Instance.new("TextLabel", petsPage)
 pTitle.Size = UDim2.new(1, -20, 0, 30)
 pTitle.Position = UDim2.new(0, 15, 0, 10)
-pTitle.BackgroundTransparency = 1
-pTitle.Text = "Pets Database & Stats Wiki"
+pTitle.BackgroundTransparency, pTitle.Text = 1, "Pets Database & Stats Wiki"
 pTitle.TextColor3 = Color3.fromRGB(56, 189, 248)
-pTitle.TextSize = 14
-pTitle.Font = Enum.Font.GothamBold
+pTitle.TextSize, pTitle.Font = 14, Enum.Font.GothamBold
 pTitle.TextXAlignment = Enum.TextXAlignment.Left
 
 local yOffset = 45
-for biome, petsList in pairs(PetsDatabase) do
-    local bLbl = Instance.new("TextLabel", petsPage)
-    bLbl.Size = UDim2.new(1, -30, 0, 24)
-    bLbl.Position = UDim2.new(0, 15, 0, yOffset)
-    bLbl.BackgroundTransparency = 1
-    bLbl.Text = "🌍 " .. tostring(biome)
-    bLbl.TextColor3 = Color3.fromRGB(234, 179, 8)
-    bLbl.TextSize = 12
-    bLbl.Font = Enum.Font.GothamBold
-    bLbl.TextXAlignment = Enum.TextXAlignment.Left
-    yOffset = yOffset + 26
-
-    for _, pet in ipairs(petsList) do
+pcall(function()
+    for _, pet in ipairs(PetsList) do
         local pRow = Instance.new("Frame", petsPage)
-        pRow.Size = UDim2.new(1, -30, 0, 24)
+        pRow.Size = UDim2.new(1, -30, 0, 26)
         pRow.Position = UDim2.new(0, 15, 0, yOffset)
         pRow.BackgroundColor3 = Color3.fromRGB(18, 18, 26)
         Instance.new("UICorner", pRow).CornerRadius = UDim.new(0, 4)
 
         local nLbl = Instance.new("TextLabel", pRow)
-        nLbl.Size = UDim2.new(0.6, 0, 1, 0)
+        nLbl.Size = UDim2.new(0.65, 0, 1, 0)
         nLbl.Position = UDim2.new(0, 8, 0, 0)
         nLbl.BackgroundTransparency = 1
-        nLbl.Text = "• " .. tostring(pet.name) .. " (" .. tostring(pet.rarity) .. ")"
+        nLbl.Text = "• [" .. tostring(pet.biome) .. "] " .. tostring(pet.name) .. " (" .. tostring(pet.rarity) .. ")"
         nLbl.TextColor3 = Color3.fromRGB(200, 200, 210)
         nLbl.TextSize = 11
         nLbl.Font = Enum.Font.Gotham
         nLbl.TextXAlignment = Enum.TextXAlignment.Left
 
         local mLbl = Instance.new("TextLabel", pRow)
-        mLbl.Size = UDim2.new(0.4, 0, 1, 0)
-        mLbl.Position = UDim2.new(0.6, -10, 0, 0)
+        mLbl.Size = UDim2.new(0.35, 0, 1, 0)
+        mLbl.Position = UDim2.new(0.65, -10, 0, 0)
         mLbl.BackgroundTransparency = 1
         mLbl.Text = "MPS: " .. tostring(pet.mps)
         mLbl.TextColor3 = Color3.fromRGB(52, 211, 153)
@@ -1842,7 +1742,8 @@ for biome, petsList in pairs(PetsDatabase) do
         mLbl.Font = Enum.Font.GothamBold
         mLbl.TextXAlignment = Enum.TextXAlignment.Right
 
-        yOffset = yOffset + 28
+        yOffset = yOffset + 30
     end
-end
+end)
 petsPage.CanvasSize = UDim2.new(0, 0, 0, yOffset + 50)
+print("Steal An Egg Professional UI Loaded Successfully!")
