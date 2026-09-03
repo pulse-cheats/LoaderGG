@@ -471,7 +471,7 @@ end
 
 
 -- ================================================================
--- ⚔️ MASTER EXTENSION: GIPHY LOADING, AUTO PLOT, ANTI-RAGDOLL, NO ANIMATION & COMPACT PRO UI
+-- ⚔️ MASTER EXTENSION: COMPACT PRO UI + STAGE SELECTOR + ALL WORKING HOOKS
 -- ================================================================
 
 task.spawn(function()
@@ -536,29 +536,77 @@ task.spawn(function()
         task.wait(0.8)
         LoadOverlay:Destroy()
 
-        -- Additional State variables for new features
+        -- Additional State variables
         State.AutoPlotDetect = true
         State.AntiRagdoll = true
         State.NoAnimation = false
 
-        -- Auto Plot Detector Function
+        
+        -- 🎯 SMART AUTO PLOT DETECTOR (scans for your name + proximity)
         local function DetectMyPlot()
+            local found = false
             pcall(function()
-                local hrp = GetHRP()
-                if not hrp then return end
-                local closest = "Plot 1"
-                local minDist = 999999
-                for pName, pPos in pairs(GameData.Plots) do
-                    local dist = (hrp.Position - pPos).Magnitude
-                    if dist < minDist then
-                        minDist = dist
-                        closest = pName
+                local myName = tostring(LocalPlayer.Name):lower()
+                local myDisplay = tostring(LocalPlayer.DisplayName):lower()
+
+                -- 1) Search workspace for objects containing your player name (plot signs, owner labels)
+                for _, obj in ipairs(Workspace:GetDescendants()) do
+                    if obj:IsA("TextLabel") or obj:IsA("BillboardGui") or obj:IsA("StringValue") then
+                        local text = ""
+                        if obj:IsA("TextLabel") then text = obj.Text or "" end
+                        if obj:IsA("StringValue") then text = obj.Value or "" end
+                        text = tostring(text):lower()
+                        if text:find(myName) or text:find(myDisplay) then
+                            local part = obj:FindFirstAncestorWhichIsA("BasePart") or obj:FindFirstAncestorWhichIsA("Model")
+                            if part then
+                                local pos = nil
+                                if part:IsA("BasePart") then pos = part.Position end
+                                if part:IsA("Model") and part:GetPivot then pos = part:GetPivot().Position end
+                                if pos then
+                                    local bestDist = 999999
+                                    local bestPlot = "Plot 1"
+                                    for pName, pPos in pairs(GameData.Plots) do
+                                        local d = (pos - pPos).Magnitude
+                                        if d < bestDist then
+                                            bestDist = d
+                                            bestPlot = pName
+                                        end
+                                    end
+                                    State.SelectedPlotName = bestPlot
+                                    found = true
+                                    return
+                                end
+                            end
+                        end
                     end
                 end
-                State.SelectedPlotName = closest
+
+                -- 2) Fallback: nearest plot within 150 studs
+                if not found then
+                    local hrp = GetHRP()
+                    if hrp then
+                        local closest = "Plot 1"
+                        local minDist = 999999
+                        for pName, pPos in pairs(GameData.Plots) do
+                            local dist = (hrp.Position - pPos).Magnitude
+                            if dist < minDist then
+                                minDist = dist
+                                closest = pName
+                            end
+                        end
+                        if minDist < 150 then
+                            State.SelectedPlotName = closest
+                            found = true
+                        end
+                    end
+                end
+
+                if not found then
+                    State.SelectedPlotName = "Plot 1"
+                end
+                print("[SAE] Auto Plot detected -> " .. State.SelectedPlotName)
             end)
         end
-
         -- Anti-Ragdoll & No Animation Loop
         task.spawn(function()
             while true do
@@ -606,10 +654,10 @@ task.spawn(function()
         tStroke.Color = Color3.fromRGB(139, 92, 246)
         tStroke.Thickness = 2
 
-        -- Main Compact Window Frame (420 x 280)
+        -- Main Compact Window Frame (440 x 300)
         local MainFrame = Instance.new("Frame", ScreenGui)
-        MainFrame.Size = UDim2.new(0, 420, 0, 280)
-        MainFrame.Position = UDim2.new(0.5, -210, 0.5, -140)
+        MainFrame.Size = UDim2.new(0, 440, 0, 300)
+        MainFrame.Position = UDim2.new(0.5, -220, 0.5, -150)
         MainFrame.BackgroundColor3 = Color3.fromRGB(13, 13, 18)
         MainFrame.Visible = true
         Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 8)
@@ -629,7 +677,7 @@ task.spawn(function()
         Instance.new("UICorner", TopBar).CornerRadius = UDim.new(0, 8)
 
         local TitleLbl = Instance.new("TextLabel", TopBar)
-        TitleLbl.Size = UDim2.new(0, 220, 1, 0)
+        TitleLbl.Size = UDim2.new(0, 240, 1, 0)
         TitleLbl.Position = UDim2.new(0, 10, 0, 0)
         TitleLbl.BackgroundTransparency = 1
         TitleLbl.Text = "Steal An Egg - Compact Pro"
@@ -656,7 +704,7 @@ task.spawn(function()
 
         -- Left Sidebar Categories
         local Sidebar = Instance.new("ScrollingFrame", MainFrame)
-        Sidebar.Size = UDim2.new(0, 115, 1, -32)
+        Sidebar.Size = UDim2.new(0, 120, 1, -32)
         Sidebar.Position = UDim2.new(0, 0, 0, 32)
         Sidebar.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
         Sidebar.BorderSizePixel = 0
@@ -668,8 +716,8 @@ task.spawn(function()
         local catPages = {}
 
         local ContentArea = Instance.new("Frame", MainFrame)
-        ContentArea.Size = UDim2.new(1, -115, 1, -32)
-        ContentArea.Position = UDim2.new(0, 115, 0, 32)
+        ContentArea.Size = UDim2.new(1, -120, 1, -32)
+        ContentArea.Position = UDim2.new(0, 120, 0, 32)
         ContentArea.BackgroundTransparency = 1
 
         for i, catName in ipairs(categories) do
@@ -689,7 +737,7 @@ task.spawn(function()
             page.Size = UDim2.new(1, 0, 1, 0)
             page.BackgroundTransparency = 1
             page.Visible = (i == 1)
-            page.CanvasSize = UDim2.new(0, 0, 0, 300)
+            page.CanvasSize = UDim2.new(0, 0, 0, 320)
             page.ScrollBarThickness = 2
             catPages[catName] = page
 
@@ -745,26 +793,104 @@ task.spawn(function()
         local farmPage = catPages["Steal & Farm"]
         CreateToggleRow(farmPage, "Auto Steal Eggs", false, function(v)
             State.Running = v
-            if v then State.CurrentMode = "FARM" end
+            if v then
+                State.CurrentMode = "FARM"
+                MainControllerLoop()
+            end
         end, 6)
+
+        -- Stage Selector Row
+        local stageRow = Instance.new("Frame", farmPage)
+        stageRow.Size = UDim2.new(1, -12, 0, 28)
+        stageRow.Position = UDim2.new(0, 6, 0, 36)
+        stageRow.BackgroundColor3 = Color3.fromRGB(18, 18, 26)
+        Instance.new("UICorner", stageRow).CornerRadius = UDim.new(0, 4)
+
+        local sLbl = Instance.new("TextLabel", stageRow)
+        sLbl.Size = UDim2.new(0, 100, 1, 0)
+        sLbl.Position = UDim2.new(0, 8, 0, 0)
+        sLbl.BackgroundTransparency = 1
+        sLbl.Text = "Select Stage (1-11)"
+        sLbl.TextColor3 = Color3.fromRGB(220, 220, 230)
+        sLbl.TextSize = 10
+        sLbl.Font = Enum.Font.GothamBold
+        sLbl.TextXAlignment = Enum.TextXAlignment.Left
+
+        local sValBtn = Instance.new("TextButton", stageRow)
+        sValBtn.Size = UDim2.new(0, 95, 0, 20)
+        sValBtn.Position = UDim2.new(1, -99, 0.5, -10)
+        sValBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 42)
+        sValBtn.Text = GameData.Stages[State.SelectedStageIndex].name .. " ▾"
+        sValBtn.TextColor3 = Color3.fromRGB(139, 92, 246)
+        sValBtn.TextSize = 10
+        sValBtn.Font = Enum.Font.GothamBold
+        Instance.new("UICorner", sValBtn).CornerRadius = UDim.new(0, 4)
+
+        sValBtn.MouseButton1Click:Connect(function()
+            State.SelectedStageIndex = State.SelectedStageIndex + 1
+            if State.SelectedStageIndex > #GameData.Stages then State.SelectedStageIndex = 1 end
+            sValBtn.Text = GameData.Stages[State.SelectedStageIndex].name .. " ▾"
+        end)
+
+        -- Plot Selector Row (Manual override + Auto Detect indicator)
+        local plotRow = Instance.new("Frame", farmPage)
+        plotRow.Size = UDim2.new(1, -12, 0, 28)
+        plotRow.Position = UDim2.new(0, 6, 0, 68)
+        plotRow.BackgroundColor3 = Color3.fromRGB(18, 18, 26)
+        Instance.new("UICorner", plotRow).CornerRadius = UDim.new(0, 4)
+
+        local pLbl = Instance.new("TextLabel", plotRow)
+        pLbl.Size = UDim2.new(0, 100, 1, 0)
+        pLbl.Position = UDim2.new(0, 8, 0, 0)
+        pLbl.BackgroundTransparency = 1
+        pLbl.Text = "Base Plot (1-7)"
+        pLbl.TextColor3 = Color3.fromRGB(220, 220, 230)
+        pLbl.TextSize = 10
+        pLbl.Font = Enum.Font.GothamBold
+        pLbl.TextXAlignment = Enum.TextXAlignment.Left
+
+        local pValBtn = Instance.new("TextButton", plotRow)
+        pValBtn.Size = UDim2.new(0, 95, 0, 20)
+        pValBtn.Position = UDim2.new(1, -99, 0.5, -10)
+        pValBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 42)
+        pValBtn.Text = State.SelectedPlotName .. " ▾"
+        pValBtn.TextColor3 = Color3.fromRGB(56, 189, 248)
+        pValBtn.TextSize = 10
+        pValBtn.Font = Enum.Font.GothamBold
+        Instance.new("UICorner", pValBtn).CornerRadius = UDim.new(0, 4)
+
+        local plotNumber = 1
+        pValBtn.MouseButton1Click:Connect(function()
+            plotNumber = plotNumber + 1
+            if plotNumber > 7 then plotNumber = 1 end
+            State.SelectedPlotName = "Plot " .. plotNumber
+            State.AutoPlotDetect = false -- Manual selection overrides auto
+            pValBtn.Text = State.SelectedPlotName .. " ▾"
+        end)
+
+
 
         CreateToggleRow(farmPage, "Auto Plot Detect", true, function(v)
             State.AutoPlotDetect = v
-        end, 36)
+            if v then DetectMyPlot() end
+        end, 100)
 
         CreateToggleRow(farmPage, "Anti-Ragdoll", true, function(v)
             State.AntiRagdoll = v
-        end, 66)
+        end, 130)
 
         CreateToggleRow(farmPage, "No Animation", false, function(v)
             State.NoAnimation = v
-        end, 96)
+        end, 160)
 
         -- --- 2. PVP COMBAT PAGE ---
         local pvpPage = catPages["PvP Combat"]
         CreateToggleRow(pvpPage, "PvP Stealer Mode", false, function(v)
-            State.PvPRunning = v
-            if v then State.CurrentMode = "PVP" end
+            State.Running = v
+            if v then
+                State.CurrentMode = "PVP"
+                MainControllerLoop()
+            end
         end, 6)
 
         -- --- 3. ESP PAGE ---
