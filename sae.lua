@@ -561,7 +561,7 @@ task.spawn(function()
                             if part then
                                 local pos = nil
                                 if part:IsA("BasePart") then pos = part.Position end
-                                if part:IsA("Model") and part:GetPivot then pos = part:GetPivot().Position end
+                                if part:IsA("Model") and part.GetPivot then pos = part:GetPivot().Position end
                                 if pos then
                                     local bestDist = 999999
                                     local bestPlot = "Plot 1"
