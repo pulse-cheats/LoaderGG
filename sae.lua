@@ -470,14 +470,16 @@ local function MainControllerLoop()
 end
 
 
+
 -- ================================================================
--- ⚔️ MASTER EXTENSION: COMPACT PRO UI + STAGE SELECTOR + ALL WORKING HOOKS
+-- ⚔️ MASTER EXTENSION v2: LOADING BAR + COMBAT MODULES + WIKI (GitHub JSON)
 -- ================================================================
 
 task.spawn(function()
     local success, err = pcall(function()
         local CoreGui = game:GetService("CoreGui")
         local TweenService = game:GetService("TweenService")
+        local HttpService = game:GetService("HttpService")
         local Players = game:GetService("Players")
         local LocalPlayer = Players.LocalPlayer
         local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
@@ -503,53 +505,94 @@ task.spawn(function()
         if not ScreenGui.Parent then ScreenGui.Parent = PlayerGui end
 
         -- ================================================================
-        -- 🌟 GIPHY LOADING SCREEN INTRO (7 SECONDS)
+        -- 🌟 COMPACT LOADING SCREEN WITH 0-100% PROGRESS BAR (7 SECONDS)
         -- ================================================================
-        local LoadOverlay = Instance.new("Frame", ScreenGui)
-        LoadOverlay.Size = UDim2.new(1, 0, 1, 0)
-        LoadOverlay.BackgroundColor3 = Color3.fromRGB(10, 10, 14)
-        LoadOverlay.ZIndex = 999
+        local LoadFrame = Instance.new("Frame", ScreenGui)
+        LoadFrame.Size = UDim2.new(0, 340, 0, 110)
+        LoadFrame.Position = UDim2.new(0.5, -170, 0.5, -55)
+        LoadFrame.BackgroundColor3 = Color3.fromRGB(13, 13, 18)
+        LoadFrame.BorderSizePixel = 0
+        LoadFrame.ZIndex = 999
+        Instance.new("UICorner", LoadFrame).CornerRadius = UDim.new(0, 10)
+        local LoadStroke = Instance.new("UIStroke", LoadFrame)
+        LoadStroke.Color = Color3.fromRGB(139, 92, 246)
+        LoadStroke.Thickness = 1.5
 
-        local LoadImage = Instance.new("ImageLabel", LoadOverlay)
-        LoadImage.Size = UDim2.new(0, 220, 0, 220)
-        LoadImage.Position = UDim2.new(0.5, -110, 0.5, -130)
+        local LoadTitle = Instance.new("TextLabel", LoadFrame)
+        LoadTitle.Size = UDim2.new(1, 0, 0, 28)
+        LoadTitle.Position = UDim2.new(0, 0, 0, 8)
+        LoadTitle.BackgroundTransparency = 1
+        LoadTitle.Text = "🥚 Steal An Egg - Loading..."
+        LoadTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+        LoadTitle.TextSize = 14
+        LoadTitle.Font = Enum.Font.GothamBold
+
+        local LoadImage = Instance.new("ImageLabel", LoadFrame)
+        LoadImage.Size = UDim2.new(0, 50, 0, 50)
+        LoadImage.Position = UDim2.new(0.5, -25, 0.76, -25)
         LoadImage.BackgroundTransparency = 1
         LoadImage.Image = "https://raw.githubusercontent.com/Gkalimanis/StealAnEgg/main/assets/giphy-downsized-medium.gif"
-        LoadImage.ZIndex = 1000
 
-        local LoadText = Instance.new("TextLabel", LoadOverlay)
-        LoadText.Size = UDim2.new(0, 300, 0, 30)
-        LoadText.Position = UDim2.new(0.5, -150, 0.5, 100)
-        LoadText.BackgroundTransparency = 1
-        LoadText.Text = "Loading Steal An Egg Pro..."
-        LoadText.TextColor3 = Color3.fromRGB(168, 85, 247)
-        LoadText.TextSize = 13
-        LoadText.Font = Enum.Font.GothamBold
-        LoadText.ZIndex = 1000
+        local BarBG = Instance.new("Frame", LoadFrame)
+        BarBG.Size = UDim2.new(0, 280, 0, 14)
+        BarBG.Position = UDim2.new(0.5, -140, 1, -20)
+        BarBG.BackgroundColor3 = Color3.fromRGB(30, 30, 42)
+        Instance.new("UICorner", BarBG).CornerRadius = UDim.new(1, 0)
 
-        task.wait(7.0)
+        local BarFill = Instance.new("Frame", BarBG)
+        BarFill.Size = UDim2.new(0, 0, 1, 0)
+        BarFill.BackgroundColor3 = Color3.fromRGB(139, 92, 246)
+        BarFill.BorderSizePixel = 0
+        Instance.new("UICorner", BarFill).CornerRadius = UDim.new(1, 0)
 
-        local fadeTween = TweenService:Create(LoadOverlay, TweenInfo.new(0.8, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundTransparency = 1})
+        local BarText = Instance.new("TextLabel", BarBG)
+        BarText.Size = UDim2.new(1, 0, 1, 0)
+        BarText.BackgroundTransparency = 1
+        BarText.Text = "0%"
+        BarText.TextColor3 = Color3.fromRGB(255, 255, 255)
+        BarText.TextSize = 9
+        BarText.Font = Enum.Font.GothamBold
+
+        for i = 0, 100, 2 do
+            BarFill.Size = UDim2.new(i / 100, 0, 1, 0)
+            BarText.Text = i .. "%"
+            task.wait(0.14)
+        end
+        task.wait(0.4)
+
+        local fadeTween = TweenService:Create(LoadFrame, TweenInfo.new(0.6, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundTransparency = 1})
         fadeTween:Play()
-        TweenService:Create(LoadImage, TweenInfo.new(0.8), {ImageTransparency = 1}):Play()
-        TweenService:Create(LoadText, TweenInfo.new(0.8), {TextTransparency = 1}):Play()
-        task.wait(0.8)
-        LoadOverlay:Destroy()
+        TweenService:Create(LoadImage, TweenInfo.new(0.6), {ImageTransparency = 1}):Play()
+        TweenService:Create(LoadTitle, TweenInfo.new(0.6), {TextTransparency = 1}):Play()
+        TweenService:Create(BarBG, TweenInfo.new(0.6), {BackgroundTransparency = 1}):Play()
+        TweenService:Create(BarText, TweenInfo.new(0.6), {TextTransparency = 1}):Play()
+        task.wait(0.6)
+        LoadFrame:Destroy()
 
-        -- Additional State variables
+        -- ================================================================
+        -- 🎮 ADDITIONAL STATE & MODULES
+        -- ================================================================
         State.AutoPlotDetect = true
         State.AntiRagdoll = true
         State.NoAnimation = false
+        State.EggESP = false
+        State.SpeedModule = false
+        State.TeleportModule = false
+        State.InfiniteJump = false
+        State.Noclip = false
+        State.AntiAFK = true
+        State.PetESP = false
+        State.PlayerESP = false
+        State.SafeWalk = true
 
-        
-        -- 🎯 SMART AUTO PLOT DETECTOR (scans for your name + proximity)
+
+        -- Auto Plot Detector (Smart Labels + Proximity)
         local function DetectMyPlot()
             local found = false
             pcall(function()
                 local myName = tostring(LocalPlayer.Name):lower()
                 local myDisplay = tostring(LocalPlayer.DisplayName):lower()
 
-                -- 1) Search workspace for objects containing your player name (plot signs, owner labels)
                 for _, obj in ipairs(Workspace:GetDescendants()) do
                     if obj:IsA("TextLabel") or obj:IsA("BillboardGui") or obj:IsA("StringValue") then
                         local text = ""
@@ -581,7 +624,6 @@ task.spawn(function()
                     end
                 end
 
-                -- 2) Fallback: nearest plot within 150 studs
                 if not found then
                     local hrp = GetHRP()
                     if hrp then
@@ -601,12 +643,10 @@ task.spawn(function()
                     end
                 end
 
-                if not found then
-                    State.SelectedPlotName = "Plot 1"
-                end
-                print("[SAE] Auto Plot detected -> " .. State.SelectedPlotName)
+                if not found then State.SelectedPlotName = "Plot 1" end
             end)
         end
+
         -- Anti-Ragdoll & No Animation Loop
         task.spawn(function()
             while true do
@@ -641,7 +681,37 @@ task.spawn(function()
             end
         end)
 
-        -- Floating Toggle Button (Appears when UI is closed with X)
+        -- Extra Combat Loop (Bat Reach & Auto Equip & Kill Aura)
+        State.BatKillAura = false
+        State.AutoBlock = false
+        State.CombatSpeed = false
+        task.spawn(function()
+            while true do
+                task.wait(0.2)
+                pcall(function()
+                    if State.BatKillAura then
+                        local hrp = GetHRP()
+                        if hrp then
+                            for _, p in ipairs(Players:GetPlayers()) do
+                                if p ~= LocalPlayer and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
+                                    local d = (hrp.Position - p.Character.HumanoidRootPart.Position).Magnitude
+                                    if d <= 18 then
+                                        EquipBat()
+                                        AttackWithBat()
+                                    end
+                                end
+                            end
+                        end
+                    end
+                    if State.CombatSpeed and State.CurrentMode == "PVP" and State.Running then
+                        SetPlayerSpeed(State.SprintSpeed + 10)
+                    end
+                end)
+            end
+        end)
+
+
+        -- Floating Toggle Button
         local ToggleBtn = Instance.new("TextButton", ScreenGui)
         ToggleBtn.Size = UDim2.new(0, 38, 0, 38)
         ToggleBtn.Position = UDim2.new(0, 15, 0, 140)
@@ -654,10 +724,10 @@ task.spawn(function()
         tStroke.Color = Color3.fromRGB(139, 92, 246)
         tStroke.Thickness = 2
 
-        -- Main Compact Window Frame (440 x 300)
+        -- Main Compact Window Frame (470 x 330)
         local MainFrame = Instance.new("Frame", ScreenGui)
-        MainFrame.Size = UDim2.new(0, 440, 0, 300)
-        MainFrame.Position = UDim2.new(0.5, -220, 0.5, -150)
+        MainFrame.Size = UDim2.new(0, 470, 0, 330)
+        MainFrame.Position = UDim2.new(0.5, -235, 0.5, -165)
         MainFrame.BackgroundColor3 = Color3.fromRGB(13, 13, 18)
         MainFrame.Visible = true
         Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 8)
@@ -680,7 +750,7 @@ task.spawn(function()
         TitleLbl.Size = UDim2.new(0, 240, 1, 0)
         TitleLbl.Position = UDim2.new(0, 10, 0, 0)
         TitleLbl.BackgroundTransparency = 1
-        TitleLbl.Text = "Steal An Egg - Compact Pro"
+        TitleLbl.Text = "Steal An Egg - Ultimate Pro"
         TitleLbl.TextColor3 = Color3.fromRGB(255, 255, 255)
         TitleLbl.TextSize = 11
         TitleLbl.Font = Enum.Font.GothamBold
@@ -737,7 +807,7 @@ task.spawn(function()
             page.Size = UDim2.new(1, 0, 1, 0)
             page.BackgroundTransparency = 1
             page.Visible = (i == 1)
-            page.CanvasSize = UDim2.new(0, 0, 0, 320)
+            page.CanvasSize = UDim2.new(0, 0, 0, 380)
             page.ScrollBarThickness = 2
             catPages[catName] = page
 
@@ -789,6 +859,7 @@ task.spawn(function()
             return row
         end
 
+
         -- --- 1. STEAL & FARM PAGE ---
         local farmPage = catPages["Steal & Farm"]
         CreateToggleRow(farmPage, "Auto Steal Eggs", false, function(v)
@@ -832,7 +903,7 @@ task.spawn(function()
             sValBtn.Text = GameData.Stages[State.SelectedStageIndex].name .. " ▾"
         end)
 
-        -- Plot Selector Row (Manual override + Auto Detect indicator)
+        -- Plot Selector Row
         local plotRow = Instance.new("Frame", farmPage)
         plotRow.Size = UDim2.new(1, -12, 0, 28)
         plotRow.Position = UDim2.new(0, 6, 0, 68)
@@ -864,11 +935,9 @@ task.spawn(function()
             plotNumber = plotNumber + 1
             if plotNumber > 7 then plotNumber = 1 end
             State.SelectedPlotName = "Plot " .. plotNumber
-            State.AutoPlotDetect = false -- Manual selection overrides auto
+            State.AutoPlotDetect = false
             pValBtn.Text = State.SelectedPlotName .. " ▾"
         end)
-
-
 
         CreateToggleRow(farmPage, "Auto Plot Detect", true, function(v)
             State.AutoPlotDetect = v
@@ -883,7 +952,11 @@ task.spawn(function()
             State.NoAnimation = v
         end, 160)
 
-        -- --- 2. PVP COMBAT PAGE ---
+        CreateToggleRow(farmPage, "Speed Boost (+45)", false, function(v)
+            State.SpeedModule = v
+        end, 190)
+
+        -- --- 2. PVP COMBAT PAGE (MORE MODULES) ---
         local pvpPage = catPages["PvP Combat"]
         CreateToggleRow(pvpPage, "PvP Stealer Mode", false, function(v)
             State.Running = v
@@ -893,14 +966,34 @@ task.spawn(function()
             end
         end, 6)
 
-        -- --- 3. ESP PAGE ---
+        CreateToggleRow(pvpPage, "Bat Kill Aura (18 studs)", false, function(v)
+            State.BatKillAura = v
+        end, 36)
+
+        CreateToggleRow(pvpPage, "Auto Equip Bat", true, function(v)
+            State.AutoEquipBat = v
+        end, 66)
+
+        CreateToggleRow(pvpPage, "Combat Speed Boost", false, function(v)
+            State.CombatSpeed = v
+        end, 96)
+
+        CreateToggleRow(pvpPage, "Steal Only Secret", false, function(v)
+            State.StealOnlySecret = v
+        end, 126)
+
+        CreateToggleRow(pvpPage, "Steal Bigger Size", false, function(v)
+            State.StealBiggerSize = v
+        end, 156)
+
+        -- --- 3. ESP & VISUALS PAGE (MORE MODULES) ---
         local espPage = catPages["ESP & Visuals"]
         CreateToggleRow(espPage, "Egg ESP (Highlight)", false, function(v)
             State.EggESP = v
             task.spawn(function()
                 while State.EggESP do
                     pcall(function()
-                        for _, obj in pairs(workspace:GetDescendants()) do
+                        for _, obj in pairs(Workspace:GetDescendants()) do
                             if obj:IsA("BasePart") and (obj.Name:lower():find("egg") or obj.Name:lower():find("nest")) then
                                 if not obj:FindFirstChild("SAE_EggESP") then
                                     local hl = Instance.new("Highlight", obj)
@@ -914,25 +1007,132 @@ task.spawn(function()
                     task.wait(2)
                 end
                 pcall(function()
-                    for _, obj in pairs(workspace:GetDescendants()) do
+                    for _, obj in pairs(Workspace:GetDescendants()) do
                         if obj.Name == "SAE_EggESP" then obj:Destroy() end
                     end
                 end)
             end)
         end, 6)
 
-        -- --- 4. PETS WIKI PAGE ---
+        CreateToggleRow(espPage, "Player ESP (Chams)", false, function(v)
+            State.PlayerESP = v
+            task.spawn(function()
+                while State.PlayerESP do
+                    pcall(function()
+                        for _, p in ipairs(Players:GetPlayers()) do
+                            if p ~= LocalPlayer and p.Character then
+                                if not p.Character:FindFirstChild("SAE_PlayerESP") then
+                                    local hl = Instance.new("Highlight", p.Character)
+                                    hl.Name = "SAE_PlayerESP"
+                                    hl.FillColor = Color3.fromRGB(239, 68, 68)
+                                    hl.OutlineColor = Color3.fromRGB(255, 255, 255)
+                                end
+                            end
+                        end
+                    end)
+                    task.wait(2)
+                end
+                pcall(function()
+                    for _, p in ipairs(Players:GetPlayers()) do
+                        if p.Character and p.Character:FindFirstChild("SAE_PlayerESP") then
+                            p.Character.SAE_PlayerESP:Destroy()
+                        end
+                    end
+                end)
+            end)
+        end, 36)
+
+        CreateToggleRow(espPage, "Fullbright / No Fog", false, function(v)
+            pcall(function()
+                local Lighting = game:GetService("Lighting")
+                Lighting.Brightness = v and 3 or 1
+                Lighting.ClockTime = v and 14 or 12
+                Lighting.FogEnd = v and 100000 or 1000
+            end)
+        end, 66)
+
+        CreateToggleRow(espPage, "FPS Boost (Anti-Lag)", false, function(v)
+            pcall(function()
+                local Terrain = Workspace:FindFirstChildOfClass("Terrain")
+                if Terrain then Terrain.WaterWaveSize = v and 0 or 0.1 end
+            end)
+        end, 96)
+
+        -- --- 4. PETS WIKI PAGE (GITHUB DATABASE INTEGRATION) ---
         local petsPage = catPages["Pets Wiki"]
-        local pInfo = Instance.new("TextLabel", petsPage)
-        pInfo.Size = UDim2.new(1, -12, 0, 140)
-        pInfo.Position = UDim2.new(0, 6, 0, 6)
-        pInfo.BackgroundTransparency = 1
-        pInfo.Text = "• Forest Pets: Chicken, Dog ($1-$2/s)\n• Desert Pets: Scorpion, Camel ($15-$45/s)\n• Volcano Pets: Magma Imp ($120/s)\n• Void Pets: Void Dragon (Secret, $5k/s)"
-        pInfo.TextColor3 = Color3.fromRGB(200, 200, 210)
-        pInfo.TextSize = 10
-        pInfo.Font = Enum.Font.Gotham
-        pInfo.TextXAlignment = Enum.TextXAlignment.Left
-        pInfo.TextWrapped = true
+        local statusLbl = Instance.new("TextLabel", petsPage)
+        statusLbl.Size = UDim2.new(1, -12, 0, 20)
+        statusLbl.Position = UDim2.new(0, 6, 0, 4)
+        statusLbl.BackgroundTransparency = 1
+        statusLbl.Text = "Fetching live Pets Database from GitHub..."
+        statusLbl.TextColor3 = Color3.fromRGB(168, 85, 247)
+        statusLbl.TextSize = 10
+        statusLbl.Font = Enum.Font.GothamBold
+
+        local petsList = Instance.new("ScrollingFrame", petsPage)
+        petsList.Size = UDim2.new(1, -12, 1, -28)
+        petsList.Position = UDim2.new(0, 6, 0, 26)
+        petsList.BackgroundTransparency = 1
+        petsList.BorderSizePixel = 0
+        petsList.CanvasSize = UDim2.new(0, 0, 0, 3000)
+        petsList.ScrollBarThickness = 2
+
+        task.spawn(function()
+            local rawJson = nil
+            local ok, res = pcall(function()
+                return game:HttpGet("https://raw.githubusercontent.com/pulse-cheats/LoaderGG/main/Pets_Database.json", true)
+            end)
+            if ok and res and #res > 20 then
+                rawJson = res
+            end
+
+            if rawJson then
+                local decodeOk, pets = pcall(function()
+                    return HttpService:JSONDecode(rawJson)
+                end)
+                if decodeOk and pets and type(pets) == "table" then
+                    statusLbl.Text = "Loaded " .. tostring(#pets) .. " Pets from GitHub DB"
+                    statusLbl.TextColor3 = Color3.fromRGB(34, 197, 94)
+                    local y = 0
+                    for idx, pet in ipairs(pets) do
+                        local card = Instance.new("Frame", petsList)
+                        card.Size = UDim2.new(1, -4, 0, 24)
+                        card.Position = UDim2.new(0, 2, 0, y)
+                        card.BackgroundColor3 = (idx % 2 == 0) and Color3.fromRGB(16, 16, 24) or Color3.fromRGB(22, 22, 32)
+                        Instance.new("UICorner", card).CornerRadius = UDim.new(0, 4)
+
+                        local nameLbl = Instance.new("TextLabel", card)
+                        nameLbl.Size = UDim2.new(0.4, 0, 1, 0)
+                        nameLbl.Position = UDim2.new(0, 6, 0, 0)
+                        nameLbl.BackgroundTransparency = 1
+                        nameLbl.Text = tostring(pet.name or "Pet") .. " (" .. tostring(pet.rarity or "Common") .. ")"
+                        nameLbl.TextColor3 = Color3.fromRGB(255, 255, 255)
+                        nameLbl.TextSize = 9
+                        nameLbl.Font = Enum.Font.GothamBold
+                        nameLbl.TextXAlignment = Enum.TextXAlignment.Left
+
+                        local statsLbl = Instance.new("TextLabel", card)
+                        statsLbl.Size = UDim2.new(0.55, 0, 1, 0)
+                        statsLbl.Position = UDim2.new(0.42, 0, 0, 0)
+                        statsLbl.BackgroundTransparency = 1
+                        statsLbl.Text = tostring(pet.biome or "") .. " | MPS: " .. tostring(pet.mps or "") .. " | " .. tostring(pet.price or "")
+                        statsLbl.TextColor3 = Color3.fromRGB(156, 163, 175)
+                        statsLbl.TextSize = 8
+                        statsLbl.Font = Enum.Font.Gotham
+                        statsLbl.TextXAlignment = Enum.TextXAlignment.Right
+
+                        y = y + 26
+                    end
+                    petsList.CanvasSize = UDim2.new(0, 0, 0, y + 10)
+                else
+                    statusLbl.Text = "Failed to parse JSON DB"
+                    statusLbl.TextColor3 = Color3.fromRGB(239, 68, 68)
+                end
+            else
+                statusLbl.Text = "Could not fetch DB from GitHub"
+                statusLbl.TextColor3 = Color3.fromRGB(239, 68, 68)
+            end
+        end)
 
         print("Steal An Egg Ultimate Master Script Loaded Successfully!")
     end)
