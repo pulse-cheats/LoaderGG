@@ -505,44 +505,49 @@ task.spawn(function()
         if not ScreenGui.Parent then ScreenGui.Parent = PlayerGui end
 
         -- ================================================================
-        -- 🌟 COMPACT LOADING SCREEN WITH 0-100% PROGRESS BAR (7 SECONDS)
+        -- 🌟 CLEAN COMPACT LOADING SCREEN WITH 0-100% PROGRESS BAR (7 SECONDS)
         -- ================================================================
         local LoadFrame = Instance.new("Frame", ScreenGui)
-        LoadFrame.Size = UDim2.new(0, 340, 0, 110)
-        LoadFrame.Position = UDim2.new(0.5, -170, 0.5, -55)
+        LoadFrame.Size = UDim2.new(0, 340, 0, 140)
+        LoadFrame.Position = UDim2.new(0.5, -170, 0.5, -70)
         LoadFrame.BackgroundColor3 = Color3.fromRGB(13, 13, 18)
         LoadFrame.BorderSizePixel = 0
-        LoadFrame.ZIndex = 999
+        LoadFrame.ZIndex = 50
         Instance.new("UICorner", LoadFrame).CornerRadius = UDim.new(0, 10)
         local LoadStroke = Instance.new("UIStroke", LoadFrame)
         LoadStroke.Color = Color3.fromRGB(139, 92, 246)
         LoadStroke.Thickness = 1.5
 
         local LoadTitle = Instance.new("TextLabel", LoadFrame)
-        LoadTitle.Size = UDim2.new(1, 0, 0, 28)
+        LoadTitle.Size = UDim2.new(1, 0, 0, 26)
         LoadTitle.Position = UDim2.new(0, 0, 0, 8)
         LoadTitle.BackgroundTransparency = 1
         LoadTitle.Text = "🥚 Steal An Egg - Loading..."
         LoadTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
-        LoadTitle.TextSize = 14
+        LoadTitle.TextSize = 13
         LoadTitle.Font = Enum.Font.GothamBold
+        LoadTitle.ZIndex = 51
 
         local LoadImage = Instance.new("ImageLabel", LoadFrame)
         LoadImage.Size = UDim2.new(0, 50, 0, 50)
-        LoadImage.Position = UDim2.new(0.5, -25, 0.76, -25)
+        LoadImage.Position = UDim2.new(0.5, -25, 0, 36)
         LoadImage.BackgroundTransparency = 1
         LoadImage.Image = "https://raw.githubusercontent.com/Gkalimanis/StealAnEgg/main/assets/giphy-downsized-medium.gif"
+        LoadImage.ZIndex = 51
 
         local BarBG = Instance.new("Frame", LoadFrame)
-        BarBG.Size = UDim2.new(0, 280, 0, 14)
-        BarBG.Position = UDim2.new(0.5, -140, 1, -20)
-        BarBG.BackgroundColor3 = Color3.fromRGB(30, 30, 42)
+        BarBG.Size = UDim2.new(0, 280, 0, 16)
+        BarBG.Position = UDim2.new(0.5, -140, 0, 96)
+        BarBG.BackgroundColor3 = Color3.fromRGB(24, 24, 34)
+        BarBG.BorderSizePixel = 0
+        BarBG.ZIndex = 52
         Instance.new("UICorner", BarBG).CornerRadius = UDim.new(1, 0)
 
         local BarFill = Instance.new("Frame", BarBG)
         BarFill.Size = UDim2.new(0, 0, 1, 0)
         BarFill.BackgroundColor3 = Color3.fromRGB(139, 92, 246)
         BarFill.BorderSizePixel = 0
+        BarFill.ZIndex = 53
         Instance.new("UICorner", BarFill).CornerRadius = UDim.new(1, 0)
 
         local BarText = Instance.new("TextLabel", BarBG)
@@ -552,21 +557,23 @@ task.spawn(function()
         BarText.TextColor3 = Color3.fromRGB(255, 255, 255)
         BarText.TextSize = 9
         BarText.Font = Enum.Font.GothamBold
+        BarText.ZIndex = 54
 
         for i = 0, 100, 2 do
             BarFill.Size = UDim2.new(i / 100, 0, 1, 0)
             BarText.Text = i .. "%"
             task.wait(0.14)
         end
-        task.wait(0.4)
+        task.wait(0.3)
 
-        local fadeTween = TweenService:Create(LoadFrame, TweenInfo.new(0.6, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundTransparency = 1})
+        local fadeTween = TweenService:Create(LoadFrame, TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundTransparency = 1})
         fadeTween:Play()
-        TweenService:Create(LoadImage, TweenInfo.new(0.6), {ImageTransparency = 1}):Play()
-        TweenService:Create(LoadTitle, TweenInfo.new(0.6), {TextTransparency = 1}):Play()
-        TweenService:Create(BarBG, TweenInfo.new(0.6), {BackgroundTransparency = 1}):Play()
-        TweenService:Create(BarText, TweenInfo.new(0.6), {TextTransparency = 1}):Play()
-        task.wait(0.6)
+        TweenService:Create(LoadImage, TweenInfo.new(0.5), {ImageTransparency = 1}):Play()
+        TweenService:Create(LoadTitle, TweenInfo.new(0.5), {TextTransparency = 1}):Play()
+        TweenService:Create(BarBG, TweenInfo.new(0.5), {BackgroundTransparency = 1}):Play()
+        TweenService:Create(BarFill, TweenInfo.new(0.5), {BackgroundTransparency = 1}):Play()
+        TweenService:Create(BarText, TweenInfo.new(0.5), {TextTransparency = 1}):Play()
+        task.wait(0.5)
         LoadFrame:Destroy()
 
         -- ================================================================
@@ -729,7 +736,7 @@ task.spawn(function()
         MainFrame.Size = UDim2.new(0, 470, 0, 330)
         MainFrame.Position = UDim2.new(0.5, -235, 0.5, -165)
         MainFrame.BackgroundColor3 = Color3.fromRGB(13, 13, 18)
-        MainFrame.Visible = true
+        MainFrame.Visible = false
         Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 8)
         local MainStroke = Instance.new("UIStroke", MainFrame)
         MainStroke.Color = Color3.fromRGB(139, 92, 246)
@@ -1080,7 +1087,7 @@ task.spawn(function()
         task.spawn(function()
             local rawJson = nil
             local ok, res = pcall(function()
-                return game:HttpGet("https://raw.githubusercontent.com/pulse-cheats/LoaderGG/main/Pets_Database.json", true)
+                return game:HttpGet("https://raw.githubusercontent.com/Gkalimanis/StealAnEgg/main/Pets_Database.json", true)
             end)
             if ok and res and #res > 20 then
                 rawJson = res
@@ -1132,6 +1139,112 @@ task.spawn(function()
                 statusLbl.Text = "Could not fetch DB from GitHub"
                 statusLbl.TextColor3 = Color3.fromRGB(239, 68, 68)
             end
+        end)
+
+        
+        -- ================================================================
+        -- 🔑 KEY SYSTEM WINDOW (Appears after Loading Screen)
+        -- ================================================================
+        local KeyFrame = Instance.new("Frame", ScreenGui)
+        KeyFrame.Size = UDim2.new(0, 360, 0, 190)
+        KeyFrame.Position = UDim2.new(0.5, -180, 0.5, -95)
+        KeyFrame.BackgroundColor3 = Color3.fromRGB(13, 13, 18)
+        KeyFrame.BorderSizePixel = 0
+        KeyFrame.Visible = true
+        Instance.new("UICorner", KeyFrame).CornerRadius = UDim.new(0, 10)
+        local KeyStroke = Instance.new("UIStroke", KeyFrame)
+        KeyStroke.Color = Color3.fromRGB(139, 92, 246)
+        KeyStroke.Thickness = 1.5
+
+        local KeyTitle = Instance.new("TextLabel", KeyFrame)
+        KeyTitle.Size = UDim2.new(1, 0, 0, 30)
+        KeyTitle.Position = UDim2.new(0, 0, 0, 8)
+        KeyTitle.BackgroundTransparency = 1
+        KeyTitle.Text = "🔑 Steal An Egg - Key System"
+        KeyTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+        KeyTitle.TextSize = 13
+        KeyTitle.Font = Enum.Font.GothamBold
+
+        local KeySub = Instance.new("TextLabel", KeyFrame)
+        KeySub.Size = UDim2.new(1, 0, 0, 18)
+        KeySub.Position = UDim2.new(0, 0, 0, 34)
+        KeySub.BackgroundTransparency = 1
+        KeySub.Text = "Enter your key to unlock the script."
+        KeySub.TextColor3 = Color3.fromRGB(156, 163, 175)
+        KeySub.TextSize = 10
+        KeySub.Font = Enum.Font.Gotham
+
+        local KeyInput = Instance.new("TextBox", KeyFrame)
+        KeyInput.Size = UDim2.new(1, -30, 0, 34)
+        KeyInput.Position = UDim2.new(0, 15, 0, 58)
+        KeyInput.BackgroundColor3 = Color3.fromRGB(22, 22, 32)
+        KeyInput.BorderSizePixel = 0
+        KeyInput.PlaceholderText = "Paste key here..."
+        KeyInput.PlaceholderColor3 = Color3.fromRGB(100, 100, 120)
+        KeyInput.Text = ""
+        KeyInput.TextColor3 = Color3.fromRGB(255, 255, 255)
+        KeyInput.TextSize = 10
+        KeyInput.Font = Enum.Font.Gotham
+        KeyInput.ClearTextOnFocus = false
+        Instance.new("UICorner", KeyInput).CornerRadius = UDim.new(0, 6)
+
+        local KeyStatus = Instance.new("TextLabel", KeyFrame)
+        KeyStatus.Size = UDim2.new(1, -30, 0, 16)
+        KeyStatus.Position = UDim2.new(0, 15, 0, 96)
+        KeyStatus.BackgroundTransparency = 1
+        KeyStatus.Text = ""
+        KeyStatus.TextColor3 = Color3.fromRGB(239, 68, 68)
+        KeyStatus.TextSize = 9
+        KeyStatus.Font = Enum.Font.GothamBold
+
+        local VerifyBtn = Instance.new("TextButton", KeyFrame)
+        VerifyBtn.Size = UDim2.new(0.46, 0, 0, 32)
+        VerifyBtn.Position = UDim2.new(0, 15, 1, -44)
+        VerifyBtn.BackgroundColor3 = Color3.fromRGB(139, 92, 246)
+        VerifyBtn.Text = "Verify Key"
+        VerifyBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+        VerifyBtn.TextSize = 11
+        VerifyBtn.Font = Enum.Font.GothamBold
+        Instance.new("UICorner", VerifyBtn).CornerRadius = UDim.new(0, 6)
+
+        local GetLinkBtn = Instance.new("TextButton", KeyFrame)
+        GetLinkBtn.Size = UDim2.new(0.46, 0, 0, 32)
+        GetLinkBtn.Position = UDim2.new(0.54, 0, 1, -44)
+        GetLinkBtn.BackgroundColor3 = Color3.fromRGB(37, 99, 235)
+        GetLinkBtn.Text = "Get Link"
+        GetLinkBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+        GetLinkBtn.TextSize = 11
+        GetLinkBtn.Font = Enum.Font.GothamBold
+        Instance.new("UICorner", GetLinkBtn).CornerRadius = UDim.new(0, 6)
+
+        local ValidKey = "user45566677788777877788_keyid7882828282929299292!7282882288228true"
+
+        VerifyBtn.MouseButton1Click:Connect(function()
+            local rawInput = KeyInput.Text or ""
+            local cleaned = rawInput:gsub("^%s*(.-)%s*$", "%1")
+            if cleaned == ValidKey then
+                KeyStatus.Text = "Key Validated! Welcome."
+                KeyStatus.TextColor3 = Color3.fromRGB(34, 197, 94)
+                task.wait(0.5)
+                KeyFrame:Destroy()
+                MainFrame.Visible = true
+            else
+                KeyStatus.Text = "Invalid Key! Please try again."
+                KeyStatus.TextColor3 = Color3.fromRGB(239, 68, 68)
+            end
+        end)
+
+        GetLinkBtn.MouseButton1Click:Connect(function()
+            local link = "https://rvstudios-keysystem.netlify.app"
+            pcall(function()
+                if setclipboard then
+                    setclipboard(link)
+                elseif toclipboard then
+                    toclipboard(link)
+                end
+            end)
+            KeyStatus.Text = "Link copied to clipboard!"
+            KeyStatus.TextColor3 = Color3.fromRGB(56, 189, 248)
         end)
 
         print("Steal An Egg Ultimate Master Script Loaded Successfully!")
